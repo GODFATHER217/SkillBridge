@@ -1,0 +1,709 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillBridge Business - Earn & Thrive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0e23 0%, #1a1a3b 100%);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      color: #e0f7fa;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(255,77,77,0.8)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center;
+      background-size: contain;
+      animation: pulse 5s infinite ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.6), 0 0 25px rgba(255, 77, 77, 0.3);
+    }
+    @keyframes pulse {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-80px) scale(1.5); opacity: 0.3; }
+      100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1.5rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .glass:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #6366f1;
+      text-shadow: 0 0 10px #ff4d4d, 0 0 20px #6366f1;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tag {
+      @apply px-3 py-1 bg-red-500 rounded-full text-white text-sm mr-2 mb-2 inline-block font-semibold;
+    }
+    .social-button {
+      @apply px-5 py-2 rounded-full font-semibold text-white bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 transition flex items-center;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      @apply glass p-10 rounded-2xl max-w-xl text-center border border-red-500/30;
+    }
+    .business-card {
+      @apply glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)];
+    }
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid #ff4d4d;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+    }
+    .badge {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin: 0.5rem;
+      transition: transform 0.3s;
+    }
+    .badge:hover {
+      transform: scale(1.1);
+    }
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.5rem;
+      height: 300px;
+    }
+    .carousel-item {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .carousel-item.active {
+      opacity: 1;
+    }
+    .carousel-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+    .carousel-dot {
+      width: 12px;
+      height: 12px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .carousel-dot.active {
+      background: #6366f1;
+    }
+    .sticky-sidebar {
+      position: sticky;
+      top: 20px;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px #ff4d4d;
+      animation: pulse 2s infinite;
+      z-index: 100;
+    }
+    .progress-bar {
+      @apply w-full bg-slate-900/50 rounded-full h-4 overflow-hidden;
+    }
+    .progress-fill {
+      @apply h-full bg-gradient-to-r from-red-500 to-indigo-600 transition-all duration-500;
+    }
+    .typing {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid #ff4d4d;
+      animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blink {
+      from, to { border-color: transparent; }
+      50% { border-color: #ff4d4d; }
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
+      z-index: 1000;
+      animation: slideIn 0.5s ease, slideOut 0.5s ease 2.5s forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+    }
+    button {
+      position: relative;
+      overflow: hidden;
+    }
+    button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.5s ease;
+      border-radius: 50%;
+    }
+    button:hover::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    button:focus {
+      outline: none;
+      ring: 2px solid #ff4d4d;
+    }
+  </style>
+</head>
+<body class="text-white">
+  <!-- Background Particles -->
+  <div class="background-wrapper" id="particle-container"></div>
+
+  <!-- Welcome Modal -->
+  <div id="welcomeModal" class="modal" role="dialog" aria-labelledby="welcomeTitle" aria-modal="true">
+    <div class="modal-content" data-aos="zoom-in">
+      <h2 id="welcomeTitle" class="text-3xl font-bold text-red-400 neon-glow mb-4">Welcome to SkillBridge Business! 💰</h2>
+      <p class="text-slate-200 mb-6 text-lg">Turn your skills into earnings and unlock epic rewards!</p>
+      <button id="exploreEarnings" class="px-8 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Explore earnings">Start Earning</button>
+      <button id="closeModal" class="mt-4 px-6 py-2 bg-transparent border border-red-400 text-red-400 rounded-lg hover:bg-red-400/10" aria-label="Close welcome modal">Later</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="text-center p-12" data-aos="fade-in">
+    <h1 class="text-6xl font-extrabold text-red-400 neon-glow mb-3">SkillBridge Business</h1>
+    <p class="text-xl text-slate-200 mb-8 typing">Earn Money, Unlock Rewards, Thrive</p>
+    <div class="flex justify-center space-x-4">
+      <a href="homepage.html" class="inline-block px-8 py-4 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Return to homepage">
+        <i class="fas fa-home mr-2"></i> Home
+      </a>
+      <a href="local_skill_swapping.html" class="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Go to skill swapping page">
+        <i class="fas fa-exchange-alt mr-2"></i> Swap Skills
+      </a>
+      <a href="blog.html" class="inline-block px-8 py-4 bg-gradient-to-r from-green-500 to-indigo-600 hover:from-green-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Go to blog page">
+        <i class="fas fa-blog mr-2"></i> Blog
+      </a>
+      <a href="Askpat.html" class="inline-block px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Go to chat page">
+        <i class="fas fa-comments mr-2"></i> AskPat
+      </a>
+    </div>
+  </header>
+
+  <!-- Earnings Dashboard -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-wallet mr-2"></i> Your Earnings Dashboard</h2>
+    <div class="glass p-6 rounded-2xl grid md:grid-cols-3 gap-4" aria-live="polite">
+      <div class="text-center">
+        <p class="text-3xl font-bold text-red-300 neon-glow">$150.00</p>
+        <p class="text-slate-200">Total Earnings</p>
+      </div>
+      <div class="text-center">
+        <p class="text-3xl font-bold text-red-300 neon-glow">$30.00</p>
+        <p class="text-slate-200">Pending Payout</p>
+      </div>
+      <div class="text-center">
+        <p class="text-3xl font-bold text-red-300 neon-glow">5</p>
+        <p class="text-slate-200">Completed Swaps</p>
+      </div>
+    </div>
+    <!-- Earnings Chart -->
+    <div class="glass p-6 rounded-2xl mt-6">
+      <h3 class="text-2xl font-bold text-red-300 mb-4">Earnings Trend</h3>
+      <canvas id="earningsChart" height="200"></canvas>
+    </div>
+  </section>
+
+  <!-- Business Opportunities -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-briefcase mr-2"></i> Monetize Your Skills</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="business-card">
+        <h3 class="text-2xl font-bold text-red-300 mb-3">Tutoring</h3>
+        <p class="text-slate-200 mb-4">Teach skills like web development or data analysis for $20-$50/hr.</p>
+        <button class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Start tutoring">Start Tutoring</button>
+      </div>
+      <div class="business-card">
+        <h3 class="text-2xl font-bold text-red-300 mb-3">Micro-Gigs</h3>
+        <p class="text-slate-200 mb-4">Offer quick tasks like logo design or SEO audits for $10-$30.</p>
+        <button class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Offer micro-gigs">Offer Gigs</button>
+      </div>
+      <div class="business-card">
+        <h3 class="text-2xl font-bold text-red-300 mb-3">Premium Swaps</h3>
+        <p class="text-slate-200 mb-4">Charge for exclusive 1:1 skill swaps, like ML sessions for $30.</p>
+        <button class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="List premium swaps">List Swaps</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skill Marketplace -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-store mr-2"></i> Skill Marketplace</h2>
+    <div class="glass p-6 rounded-2xl flex flex-col md:flex-row items-center gap-4 mb-6">
+      <input type="text" id="searchMarket" placeholder="Search skills..." class="flex-1 bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Search skill marketplace"/>
+      <div class="flex gap-2">
+        <button class="tag hover:bg-red-600" data-filter="all" aria-label="Show all skills">All</button>
+        <button class="tag hover:bg-red-600" data-filter="coding" aria-label="Show coding skills">Coding</button>
+        <button class="tag hover:bg-red-600" data-filter="design" aria-label="Show design skills">Design</button>
+        <button class="tag hover:bg-red-600" data-filter="mentorship" aria-label="Show mentorship skills">Mentorship</button>
+      </div>
+    </div>
+    <div id="marketplace" class="grid md:grid-cols-2 gap-6" aria-live="polite">
+      <div class="business-card" data-category="coding">
+        <h3 class="text-xl font-bold text-red-300 mb-2">Web Development Tutoring</h3>
+        <p class="text-slate-200 mb-2">By Amy (Student) | $25/hr</p>
+        <p class="text-slate-400 text-sm mb-3">Learn HTML, CSS, and JS with hands-on projects.</p>
+        <button class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Book Amy's web development tutoring">Book Now</button>
+      </div>
+      <div class="business-card" data-category="coding">
+        <h3 class="text-xl font-bold text-red-300 mb-2">Machine Learning Session</h3>
+        <p class="text-slate-200 mb-2">By Prof. Lee (Faculty) | $40/hr</p>
+        <p class="text-slate-400 text-sm mb-3">Master ML basics with real-world examples.</p>
+        <button class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Book Prof. Lee's machine learning session">Book Now</button>
+      </div>
+      <div class="business-card" data-category="design">
+        <h3 class="text-xl font-bold text-red-300 mb-2">Logo Design Gig</h3>
+        <p class="text-slate-200 mb-2">By Emma (Student) | $20</p>
+        <p class="text-slate-400 text-sm mb-3">Get a custom logo in 48 hours.</p>
+        <button class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Hire Emma for logo design">Hire Now</button>
+      </div>
+      <div class="business-card" data-category="mentorship">
+        <h3 class="text-xl font-bold text-red-300 mb-2">Data Analysis Mentorship</h3>
+        <p class="text-slate-200 mb-2">By Dr. Smith (Faculty) | $50/hr</p>
+        <p class="text-slate-400 text-sm mb-3">Personalized guidance in data analysis.</p>
+        <button class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Book Dr. Smith's data analysis mentorship">Book Now</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Carousel -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-star mr-2"></i> Success Stories</h2>
+    <div class="carousel glass">
+      <div class="carousel-item active">
+        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div class="text-center text-white p-6">
+            <img src="https://ui-avatars.com/api/?name=Amy&size=60" alt="Amy's avatar" class="avatar mx-auto mb-4"/>
+            <p class="text-slate-200 mb-4 italic">"I earned $50 tutoring web development on SkillBridge! It’s a game-changer."</p>
+            <p class="text-red-300 font-bold">Amy, Student</p>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div class="text-center text-white p-6">
+            <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=60" alt="Dr. Smith's avatar" class="avatar mx-auto mb-4"/>
+            <p class="text-slate-200 mb-4 italic">"Mentoring data analysis brought in $100 and connected me with amazing students."</p>
+            <p class="text-red-300 font-bold">Dr. Smith, Faculty</p>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-controls">
+        <div class="carousel-dot active" data-index="0"></div>
+        <div class="carousel-dot" data-index="1"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rewards & Leaderboard -->
+  <section class="max-w-6xl mx-auto px-6 mb-24 grid md:grid-cols-3 gap-8" data-aos="fade-up">
+    <!-- Rewards -->
+    <div class="md:col-span-2">
+      <h2 class="text-4xl font-extrabold mb-10 text-red-400 neon-glow"><i class="fas fa-trophy mr-2"></i> Your Rewards</h2>
+      <div class="glass p-6 rounded-2xl mb-6">
+        <h3 class="text-2xl font-bold text-red-300 mb-4">Progress Tracker</h3>
+        <p class="text-slate-200 mb-2">Points: <span id="rewardPoints">200</span></p>
+        <div class="progress-bar mb-4">
+          <div id="rewardProgress" class="progress-fill" style="width: 20%"></div>
+        </div>
+        <p class="text-slate-200 mb-4">Next Milestone: Top Swapper (500 points)</p>
+        <h3 class="text-2xl font-bold text-red-300 mb-4">Badges</h3>
+        <div class="flex flex-wrap">
+          <div class="badge" title="Skill Master" aria-label="Skill Master badge">🏅</div>
+          <div class="badge" title="Top Referrer" aria-label="Top Referrer badge">👥</div>
+        </div>
+        <button id="claimReward" class="mt-4 px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Claim next reward">Claim Reward</button>
+      </div>
+    </div>
+    <!-- Leaderboard -->
+    <div class="sticky-sidebar glass p-6 rounded-2xl">
+      <h3 class="text-2xl font-bold text-red-300 mb-4">Leaderboard</h3>
+      <ul class="space-y-4" aria-live="polite">
+        <li class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Amy&size=50" alt="Amy's avatar" class="avatar mr-2"/>
+          <div>
+            <p class="text-slate-200 font-bold">Amy</p>
+            <p class="text-slate-400 text-sm">$150 | 300 points</p>
+          </div>
+        </li>
+        <li class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=50" alt="Dr. Smith's avatar" class="avatar mr-2"/>
+          <div>
+            <p class="text-slate-200 font-bold">Dr. Smith</p>
+            <p class="text-slate-400 text-sm">$100 | 250 points</p>
+          </div>
+        </li>
+        <li class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Emma&size=50" alt="Emma's avatar" class="avatar mr-2"/>
+          <div>
+            <p class="text-slate-200 font-bold">Emma</p>
+            <p class="text-slate-400 text-sm">$80 | 200 points</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Referral Program -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-user-plus mr-2"></i> Referral Program</h2>
+    <div class="glass p-6 rounded-2xl text-center">
+      <p class="text-slate-200 mb-4 text-lg">Invite friends and earn 50 points per signup!</p>
+      <input type="text" id="referralLink" value="https://skillbridge.com/refer?user=you" readonly class="w-full md:w-1/2 bg-slate-900/50 border border-red-400/50 p-4 rounded-lg mb-4 text-white" aria-label="Your referral link"/>
+      <button id="copyLink" class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Copy referral link">Copy Link</button>
+    </div>
+  </section>
+
+  <!-- Payout Options -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-money-bill-wave mr-2"></i> Payout Options</h2>
+    <div class="glass p-6 rounded-2xl">
+      <p class="text-slate-200 mb-4 text-lg">Choose how to receive your earnings:</p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <button class="px-6 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Select PayPal payout">PayPal</button>
+        <button class="px-6 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Select Crypto payout">Crypto</button>
+        <button class="px-6 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Select Bank Transfer payout">Bank Transfer</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" onclick="scrollToTop()" aria-label="Scroll back to top">
+    <i class="fas fa-coins"></i>
+  </button>
+
+  <!-- Social Media Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-users mr-2"></i> Share Your Success!</h2>
+    <div class="text-center mb-8">
+      <p class="text-slate-200 text-lg">Spread the word about earning with SkillBridge!</p>
+    </div>
+    <div class="flex justify-center space-x-8">
+      <a href="https://www.instagram.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on Instagram">
+        <i class="fab fa-instagram mr-2"></i> Instagram
+      </a>
+      <a href="https://www.linkedin.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on LinkedIn">
+        <i class="fab fa-linkedin mr-2"></i> LinkedIn
+      </a>
+      <a href="https://www.facebook.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on Facebook">
+        <i class="fab fa-facebook mr-2"></i> Facebook
+      </a>
+      <a href="https://twitter.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on Twitter">
+        <i class="fab fa-twitter mr-2"></i> Twitter
+      </a>
+    </div>
+    <div class="text-center mt-8">
+      <p class="text-slate-200 italic text-lg">Use #SkillBridgeBusiness to join the convo!</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center p-8 text-slate-300" data-aos="fade-up">
+    Forged with <i class="fas fa-fire text-red-500"></i> by the SkillBridge Crew. No coins, just collaboration.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-back',
+      once: true
+    });
+
+    // Particle Background
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      for (let i = 0; i < 60; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${4 + Math.random() * 3}s`;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // Welcome Modal
+    const welcomeModal = document.getElementById('welcomeModal');
+    const exploreEarnings = document.getElementById('exploreEarnings');
+    const closeModal = document.getElementById('closeModal');
+    window.onload = () => {
+      setTimeout(() => {
+        welcomeModal.style.display = 'flex';
+        welcomeModal.style.opacity = '0';
+        setTimeout(() => welcomeModal.style.transition = 'opacity 0.5s', 10);
+        setTimeout(() => welcomeModal.style.opacity = '1', 20);
+        exploreEarnings.focus();
+      }, 800);
+    };
+    exploreEarnings.onclick = closeModal.onclick = () => {
+      welcomeModal.style.opacity = '0';
+      setTimeout(() => welcomeModal.style.display = 'none', 500);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && welcomeModal.style.display === 'flex') {
+        welcomeModal.style.opacity = '0';
+        setTimeout(() => welcomeModal.style.display = 'none', 500);
+      }
+    });
+
+    // Earnings Chart
+    const ctx = document.getElementById('earningsChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+          label: 'Earnings ($)',
+          data: [20, 40, 60, 100, 150],
+          borderColor: '#ff4d4d',
+          backgroundColor: 'rgba(255, 77, 77, 0.2)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#e0f7fa' },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          },
+          x: {
+            ticks: { color: '#e0f7fa' },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#e0f7fa' } }
+        }
+      }
+    });
+
+    // Carousel Logic
+    const carouselItems = document.querySelectorAll('.carousel-item');
+    const carouselDots = document.querySelectorAll('.carousel-dot');
+    let currentSlide = 0;
+    function showSlide(index) {
+      carouselItems.forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+      carouselDots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
+    carouselDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        currentSlide = parseInt(dot.dataset.index);
+        showSlide(currentSlide);
+      });
+    });
+    setInterval(() => {
+      currentSlide = (currentSlide + 1) % carouselItems.length;
+      showSlide(currentSlide);
+    }, 5000);
+
+    // Marketplace Search and Filter
+    const searchMarket = document.getElementById('searchMarket');
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const marketItems = document.querySelectorAll('.business-card');
+    searchMarket.addEventListener('input', () => {
+      const query = searchMarket.value.toLowerCase();
+      marketItems.forEach(item => {
+        const title = item.querySelector('h3').textContent.toLowerCase();
+        const desc = item.querySelector('.text-slate-400').textContent.toLowerCase();
+        item.style.display = title.includes(query) || desc.includes(query) ? 'block' : 'none';
+      });
+    });
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+        marketItems.forEach(item => {
+          const category = item.dataset.category;
+          item.style.display = filter === 'all' || category === filter ? 'block' : 'none';
+        });
+        filterButtons.forEach(btn => btn.classList.remove('bg-red-600'));
+        button.classList.add('bg-red-600');
+      });
+    });
+
+    // Referral Link Copy
+    document.getElementById('copyLink').addEventListener('click', () => {
+      const referralLink = document.getElementById('referralLink');
+      referralLink.select();
+      document.execCommand('copy');
+      showNotification('Referral link copied! Earn 50 points per signup!');
+      updateRewards(50); // Award 50 points for copying link
+    });
+
+    // Claim Reward
+    document.getElementById('claimReward').addEventListener('click', () => {
+      showNotification('Reward claimed! +100 points!');
+      updateRewards(100);
+      const badges = document.querySelector('.flex-wrap');
+      const newBadge = document.createElement('div');
+      newBadge.className = 'badge';
+      newBadge.title = 'Epic Earner';
+      newBadge.setAttribute('aria-label', 'Epic Earner badge');
+      newBadge.textContent = '💰';
+      badges.appendChild(newBadge);
+    });
+
+    // Rewards Progress
+    const rewardPointsEl = document.getElementById('rewardPoints');
+    const rewardProgressEl = document.getElementById('rewardProgress');
+    let points = 200;
+    function updateRewards(addPoints) {
+      points += addPoints;
+      rewardPointsEl.textContent = points;
+      rewardProgressEl.style.width = `${Math.min((points / 500) * 100, 100)}%`;
+    }
+
+    // Notification Popup
+    function showNotification(message) {
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
+    }
+
+    // Back to Top
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

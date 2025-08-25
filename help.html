@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Help Center | SkillBridge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0e23 0%, #1a1a3b 100%);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      color: #e0f7fa;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(255,77,77,0.8)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center;
+      background-size: contain;
+      animation: pulse 5s infinite ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.6), 0 0 25px rgba(255, 77, 77, 0.3);
+    }
+    @keyframes pulse {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-80px) scale(1.5); opacity: 0.3; }
+      100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1.5rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .glass:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #6366f1;
+      text-shadow: 0 0 10px #ff4d4d, 0 0 20px #6366f1;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: #ff4d4d;
+    }
+    h1 { font-size: 5rem; }
+    h2 { font-size: 2.5rem; }
+    h3 { font-size: 1.5rem; }
+    p, a, label {
+      color: #e0f7fa;
+    }
+    a:hover {
+      color: #6366f1;
+      text-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+    }
+    button, .button {
+      position: relative;
+      overflow: hidden;
+    }
+    button::after, .button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.5s ease;
+      border-radius: 50%;
+    }
+    button:hover::after, .button:hover::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .faq-item {
+      transition: background 0.3s ease;
+    }
+    .faq-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+    }
+    .chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      padding: 15px;
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.7);
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .chat-toggle:hover {
+      transform: scale(1.1);
+    }
+    .chat-window {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .chat-header {
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      padding: 10px;
+      color: #fff;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-body {
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      color: #e0f7fa;
+    }
+    .chat-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .chat-input input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #e0f7fa;
+      padding: 5px;
+      outline: none;
+    }
+    .chat-input button {
+      background: #ff4d4d;
+      border: none;
+      padding: 5px 10px;
+      color: #fff;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    .chat-input button:hover {
+      background: #ff6666;
+    }
+  </style>
+</head>
+<body class="text-white">
+  <!-- Background Particles -->
+  <div class="background-wrapper" id="particle-container"></div>
+
+  <!-- Header -->
+  <header class="text-center p-12 fade-in" data-aos="fade-in">
+    <h1 class="text-6xl font-extrabold text-red-400 neon-glow mb-3">SkillBridge Help Center</h1>
+    <p class="text-xl text-slate-200 mb-8">Got questions? We've got answers. Dive in or reach out to our support crew!</p>
+    <div class="space-x-4">
+      <a href="homepage.html" class="inline-block px-8 py-4 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg button">
+        <i class="fas fa-home mr-2"></i> Home
+      </a>
+    </div>
+  </header>
+
+  <!-- Help Sections -->
+  <main class="max-w-6xl mx-auto grid gap-10 px-6 mb-24 fade-in" data-aos="fade-up">
+    <!-- FAQ Search -->
+    <section class="glass p-8 rounded-2xl shadow-2xl">
+      <h2 class="text-3xl font-bold mb-6 text-red-400 neon-glow"><i class="fas fa-search mr-2"></i> Search FAQs</h2>
+      <div class="mb-4">
+        <input type="text" id="faqSearch" placeholder="Type your question (e.g., 'How do I swap skills?')" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Search FAQs"/>
+      </div>
+      <div id="faqResults" class="text-slate-200"></div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="glass p-8 rounded-2xl shadow-2xl">
+      <h2 class="text-3xl font-bold mb-6 text-red-400 neon-glow"><i class="fas fa-book mr-2"></i> Frequently Asked Questions</h2>
+      <div class="space-y-6 faq-list">
+        <div class="faq-item p-2">
+          <h3 class="text-lg font-semibold text-red-300">How do I start swapping skills?</h3>
+          <p class="text-slate-200">Create a profile, list your skills, and browse the community to find someone with the skills you need. Connect and propose a swap!</p>
+        </div>
+        <div class="faq-item p-2">
+          <h3 class="text-lg font-semibold text-red-300">Is SkillBridge free to use?</h3>
+          <p class="text-slate-200">Yes! SkillBridge is 100% free. We’re all about exchanging value through skills, not cash.</p>
+        </div>
+        <div class="faq-item p-2">
+          <h3 class="text-lg font-semibold text-red-300">What if I don’t know what skills to offer?</h3>
+          <p class="text-slate-200">Check out our blog for tips on discovering your skills or explore trending skills on the platform.</p>
+        </div>
+        <div class="faq-item p-2">
+          <h3 class="text-lg font-semibold text-red-300">How do I ensure a fair skill swap?</h3>
+          <p class="text-slate-200">Set clear expectations upfront and use our messaging system to agree on deliverables and timelines before starting.</p>
+        </div>
+      </div>
+      <div class="mt-6">
+        <a href="#more-faqs" class="text-red-400 hover:text-indigo-400 transition">View More FAQs</a>
+      </section>
+
+    <!-- Troubleshooting Guide -->
+    <section class="glass p-8 rounded-2xl shadow-2xl">
+      <h2 class="text-3xl font-bold mb-6 text-red-400 neon-glow"><i class="fas fa-tools mr-2"></i> Troubleshooting Guide</h2>
+      <div class="space-y-6">
+        <div class="faq-item p-2">
+          <h3 class="text-lg font-semibold text-red-300">Can’t log in to your account?</h3>
+          <p class="text-slate-200">Try resetting your password via the “Forgot Password” link. Ensure you’re using the correct email. Still stuck? Contact support.</p>
+        </div>
+        <div class="faq-item p-2">
+          <h3 class="text-lg font-semibold text-red-300">Profile not saving changes?</h3>
+          <p class="text-slate-200">Check your internet connection and ensure all required fields are filled. Try refreshing the page or using a different browser.</p>
+        </div>
+        <div class="faq-item p-2">
+          <h3 class="text-lg font-semibold text-red-300">Messages not sending?</h3>
+          <p class="text-slate-200">Verify your connection and check if the recipient’s profile is active. If the issue persists, reach out to support.</p>
+        </div>
+      </div>
+      <div class="mt-6">
+        <a href="#more-troubleshooting" class="text-red-400 hover:text-indigo-400 transition">More Troubleshooting Tips</a>
+      </div>
+    </section>
+
+    <!-- Contact Support -->
+    <section class="glass p-8 rounded-2xl shadow-2xl">
+      <h2 class="text-3xl font-bold mb-6 text-red-400 neon-glow"><i class="fas fa-envelope mr-2"></i> Contact Support</h2>
+      <p class="text-slate-200 mb-4 text-lg">Can’t find what you need? Our support crew is ready to help!</p>
+      <form action="#" method="POST">
+        <div class="mb-4">
+          <label for="name" class="block text-slate-200 mb-2">Your Name</label>
+          <input type="text" id="name" placeholder="Your Name" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" required/>
+        </div>
+        <div class="mb-4">
+          <label for="email" class="block text-slate-200 mb-2">Your Email</label>
+          <input type="email" id="email" placeholder="Your Email Address" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" required/>
+        </div>
+        <div class="mb-4">
+          <label for="message" class="block text-slate-200 mb-2">Your Question or Issue</label>
+          <textarea id="message" placeholder="Describe your question or issue..." class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg mb-4 h-32 resize-none focus:outline-none focus:border-red-500 text-white" required></textarea>
+        </div>
+        <button type="submit" class="w-full py-4 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow text-white rounded-lg font-semibold transition">Submit Request</button>
+      </form>
+    </section>
+
+    <!-- Contact Details -->
+    <section class="glass p-8 rounded-2xl shadow-2xl">
+      <h2 class="text-3xl font-bold mb-6 text-red-400 neon-glow"><i class="fas fa-phone mr-2"></i> Support Information</h2>
+      <p class="text-slate-200 mb-4 text-lg">For urgent issues, reach us through:</p>
+      <div class="text-slate-200 mb-2">
+        <strong>Email:</strong> <a href="mailto:support@skillbridge.com" class="text-red-400 hover:text-indigo-400">support@skillbridge.com</a>
+      </div>
+      <div class="text-slate-200 mb-2">
+        <strong>Phone:</strong> <a href="tel:+1234567890" class="text-red-400 hover:text-indigo-400">+123-456-7890</a>
+      </div>
+      <div class="text-slate-200 mb-2">
+        <strong>Support Hours:</strong> Monday - Friday, 9 AM - 5 PM (EST)
+      </div>
+      <div class="text-slate-200 mt-4">
+        <strong>Community Forum:</strong> <a href="https://forum.skillbridge.com" class="text-red-400 hover:text-indigo-400">Join the Discussion</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Live Chat Toggle -->
+  <div class="chat-toggle" onclick="toggleChat()">
+    <i class="fas fa-comment"></i>
+  </div>
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <span>Live Support</span>
+      <button onclick="toggleChat()" style="background: transparent; box-shadow: none;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <p>Welcome to SkillBridge Support! How can we assist you?</p>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="Type your message..."/>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center p-8 text-slate-200" data-aos="fade-up">
+    Forged with <i class="fas fa-fire text-red-500"></i> by the SkillBridge Crew. No coins, just collaboration.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-back',
+      once: true
+    });
+
+    // Particle Background
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      for (let i = 0; i < 60; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${4 + Math.random() * 3}s`;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // FAQ Search
+    const faqSearch = document.getElementById('faqSearch');
+    const faqResults = document.getElementById('faqResults');
+    const faqList = document.querySelectorAll('.faq-list .faq-item');
+    faqSearch.addEventListener('input', () => {
+      const query = faqSearch.value.toLowerCase();
+      faqResults.innerHTML = '';
+      faqList.forEach(item => {
+        const question = item.querySelector('h3').textContent.toLowerCase();
+        const answer = item.querySelector('p').textContent.toLowerCase();
+        if (question.includes(query) || answer.includes(query)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      if (!query) {
+        faqList.forEach(item => item.style.display = 'block');
+        faqResults.innerHTML = '';
+      } else if (!Array.from(faqList).some(item => item.style.display === 'block')) {
+        faqResults.innerHTML = '<p class="text-slate-200">No results found. Try contacting support!</p>';
+      }
+    });
+
+    // Live Chat
+    function toggleChat() {
+      const chatWindow = document.getElementById('chatWindow');
+      chatWindow.style.display = chatWindow.style.display === 'block' ? 'none' : 'block';
+    }
+    function sendMessage() {
+      const chatInput = document.getElementById('chatInput');
+      const chatBody = document.getElementById('chatBody');
+      const message = chatInput.value.trim();
+      if (message) {
+        const userMessage = document.createElement('p');
+        userMessage.innerHTML = `<strong>You:</strong> ${message}`;
+        chatBody.appendChild(userMessage);
+        chatBody.scrollTop = chatBody.scrollHeight;
+        chatInput.value = '';
+        // Simulated bot response
+        setTimeout(() => {
+          const botMessage = document.createElement('p');
+          botMessage.innerHTML = `<strong>Support:</strong> Thanks for reaching out! We're reviewing your query. For now, try checking our FAQs or contact us at support@skillbridge.com.`;
+          chatBody.appendChild(botMessage);
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }, 1000);
+      }
+    }
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>

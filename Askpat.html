@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillBridge AskPat - Chat & Connect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0e23 0%, #1a1a3b 100%);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      color: #e0f7fa;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(255,77,77,0.8)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center;
+      background-size: contain;
+      animation: pulse 5s infinite ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.6), 0 0 25px rgba(255, 77, 77, 0.3);
+    }
+    @keyframes pulse {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-80px) scale(1.5); opacity: 0.3; }
+      100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1.5rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .glass:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #6366f1;
+      text-shadow: 0 0 10px #ff4d4d, 0 0 20px #6366f1;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tag {
+      @apply px-3 py-1 bg-red-500 rounded-full text-white text-sm mr-2 mb-2 inline-block font-semibold;
+    }
+    .social-button {
+      @apply px-5 py-2 rounded-full font-semibold text-white bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 transition flex items-center;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      @apply glass p-10 rounded-2xl max-w-xl text-center border border-red-500/30;
+    }
+    .chat-container {
+      height: 500px;
+      overflow-y: auto;
+      border-radius: 1.5rem;
+      border: 2px solid rgba(99, 102, 241, 0.3);
+      padding: 1rem;
+      background: rgba(10, 14, 35, 0.9);
+    }
+    .message {
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .message.own {
+      justify-content: flex-end;
+    }
+    .message.own .message-bubble {
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      color: #fff;
+    }
+    .message-bubble {
+      max-width: 70%;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      background: #1a1a3b;
+      color: #e0f7fa;
+      position: relative;
+    }
+    .message-bubble::before {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: inherit;
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+      top: 10px;
+    }
+    .message:not(.own) .message-bubble::before {
+      left: -5px;
+      transform: rotate(45deg);
+    }
+    .message.own .message-bubble::before {
+      right: -5px;
+      transform: rotate(-135deg);
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #ff4d4d;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+      cursor: pointer;
+    }
+    .typing-indicator {
+      display: none;
+      padding: 0.5rem;
+    }
+    .typing-indicator span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: bounce 0.6s infinite alternate;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      to { transform: translateY(-5px); }
+    }
+    .reaction {
+      display: inline-block;
+      margin-left: 0.5rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+    }
+    .reaction:hover {
+      transform: scale(1.2);
+    }
+    .online-dot {
+      width: 10px;
+      height: 10px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 0.5rem;
+    }
+    .sticky-sidebar {
+      position: sticky;
+      top: 20px;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px #ff4d4d;
+      animation: pulse 2s infinite;
+      z-index: 100;
+    }
+    .progress-bar {
+      @apply w-full bg-slate-900/50 rounded-full h-4 overflow-hidden;
+    }
+    .progress-fill {
+      @apply h-full bg-gradient-to-r from-red-500 to-indigo-600 transition-all duration-500;
+    }
+    .typing {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid #ff4d4d;
+      animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blink {
+      from, to { border-color: transparent; }
+      50% { border-color: #ff4d4d; }
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+    }
+    button {
+      position: relative;
+      overflow: hidden;
+    }
+    button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.5s ease;
+      border-radius: 50%;
+    }
+    button:hover::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    button:focus {
+      outline: none;
+      ring: 2px solid #ff4d4d;
+    }
+    .notification-badge {
+      @apply px-2 py-1 bg-red-500 rounded-full text-white text-xs font-semibold;
+    }
+  </style>
+</head>
+<body class="text-white">
+  <!-- Background Particles -->
+  <div class="background-wrapper" id="particle-container"></div>
+
+  <!-- Welcome Modal -->
+  <div id="welcomeModal" class="modal" role="dialog" aria-labelledby="welcomeTitle" aria-modal="true">
+    <div class="modal-content" data-aos="zoom-in">
+      <h2 id="welcomeTitle" class="text-3xl font-bold text-red-400 neon-glow mb-4">Welcome to AskPat! ⚡️</h2>
+      <p class="text-slate-200 mb-6 text-lg">Join the SkillBridge community, chat about skills, and connect with epic swappers!</p>
+      <button id="joinChat" class="px-8 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Join the chat">Jump In</button>
+      <button id="closeModal" class="mt-4 px-6 py-2 bg-transparent border border-red-400 text-red-400 rounded-lg hover:bg-red-400/10" aria-label="Close welcome modal">Later</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="text-center p-12" data-aos="fade-in">
+    <h1 class="text-6xl font-extrabold text-red-400 neon-glow mb-3">SkillBridge AskPat</h1>
+    <p class="text-xl text-slate-200 mb-8 typing">Chat, Connect, and Swap Skills in Real-Time</p>
+    <div class="flex justify-center space-x-4">
+      <a href="Homepage.html" class="inline-block px-8 py-4 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Return to homepage">
+        <i class="fas fa-home mr-2"></i> Home
+      </a>
+      <a href="local_skill_swapping.html" class="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Go to skill swapping page">
+        <i class="fas fa-exchange-alt mr-2"></i> Swap Skills
+      </a>
+      <a href="blog.html" class="inline-block px-8 py-4 bg-gradient-to-r from-green-500 to-indigo-600 hover:from-green-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Go to blog page">
+        <i class="fas fa-blog mr-2"></i> Blog
+      </a>
+    </div>
+  </header>
+
+  <!-- Event Banner -->
+  <section class="max-w-6xl mx-auto px-6 mb-12" data-aos="fade-up">
+    <div class="glass p-6 rounded-2xl text-center bg-gradient-to-r from-red-500/20 to-indigo-600/20">
+      <h3 class="text-2xl font-bold text-red-300 mb-3">Skill Swap Q&A with Dr. Smith</h3>
+      <p class="text-slate-200 mb-4">Join us on May 20, 2025, for live tips on data analysis! 📊</p>
+      <button class="px-6 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold" aria-label="RSVP for Dr. Smith's Q&A">RSVP</button>
+    </div>
+  </section>
+
+  <!-- Chat Interface -->
+  <section class="max-w-6xl mx-auto px-6 mb-24 grid md:grid-cols-3 gap-8" data-aos="fade-up">
+    <!-- Chat Area -->
+    <div class="md:col-span-2">
+      <!-- Room Selector -->
+      <div class="glass p-4 rounded-2xl mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Chat room selector">
+        <button class="tag hover:bg-red-600 active-room" data-room="general" role="tab" aria-selected="true" aria-label="General chat room">General <span class="notification-badge hidden">2</span></button>
+        <button class="tag hover:bg-red-600" data-room="coding" role="tab" aria-selected="false" aria-label="Coding chat room">Coding <span class="notification-badge hidden">1</span></button>
+        <button class="tag hover:bg-red-600" data-room="design" role="tab" aria-selected="false" aria-label="Design chat room">Design</button>
+        <button class="tag hover:bg-red-600" data-room="mentorship" role="tab" aria-selected="false" aria-label="Mentorship chat room">Mentorship</button>
+        <button class="tag hover:bg-red-600" data-room="community" role="tab" aria-selected="false" aria-label="Community chat room">Community</button>
+      </div>
+      <!-- Chat Container -->
+      <div class="chat-container glass" id="chatContainer" role="log" aria-live="polite">
+        <!-- General Room Messages -->
+        <div class="room" data-room="general">
+          <div class="message">
+            <img src="https://ui-avatars.com/api/?name=Amy&size=40" alt="Amy's avatar" class="avatar" data-user="Amy"/>
+            <div class="message-bubble">Hey everyone! Just swapped web dev skills with Dr. Smith! 😎</div>
+          </div>
+          <div class="message">
+            <img src="https://ui-avatars.com/api/?name=Clara&size=40" alt="Clara's avatar" class="avatar" data-user="Clara"/>
+            <div class="message-bubble">That’s awesome, Amy! How was it? <span class="reaction">👍</span></div>
+          </div>
+          <div class="message own">
+            <div class="message-bubble">I’m thinking of joining the Coding room. Any tips?</div>
+            <img src="https://ui-avatars.com/api/?name=You&size=40" alt="Your avatar" class="avatar" data-user="You"/>
+          </div>
+        </div>
+        <!-- Coding Room Messages -->
+        <div class="room hidden" data-room="coding">
+          <div class="message">
+            <img src="https://ui-avatars.com/api/?name=Prof.+Lee&size=40" alt="Prof. Lee's avatar" class="avatar" data-user="Prof. Lee"/>
+            <div class="message-bubble">Anyone up for a machine learning swap? I’m offering ML basics!</div>
+          </div>
+          <div class="message">
+            <img src="https://ui-avatars.com/api/?name=Ben&size=40" alt="Ben's avatar" class="avatar" data-user="Ben"/>
+            <div class="message-bubble">I’m in! Can swap video editing. <span class="reaction">🔥</span></div>
+          </div>
+        </div>
+        <!-- Design Room Messages -->
+        <div class="room hidden" data-room="design">
+          <div class="message">
+            <img src="https://ui-avatars.com/api/?name=Emma&size=40" alt="Emma's avatar" class="avatar" data-user="Emma"/>
+            <div class="message-bubble">Just designed a logo for Dan’s SEO project. Loving these swaps!</div>
+          </div>
+        </div>
+        <!-- Mentorship Room Messages -->
+        <div class="room hidden" data-room="mentorship">
+          <div class="message">
+            <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=40" alt="Dr. Smith's avatar" class="avatar" data-user="Dr. Smith"/>
+            <div class="message-bubble">Happy to mentor anyone in data analysis. Who’s interested?</div>
+          </div>
+        </div>
+        <!-- Community Room Messages -->
+        <div class="room hidden" data-room="community">
+          <div class="message">
+            <img src="https://ui-avatars.com/api/?name=Dan&size=40" alt="Dan's avatar" class="avatar" data-user="Dan"/>
+            <div class="message-bubble">The SkillBridge community is so welcoming! Excited to be here.</div>
+          </div>
+        </div>
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <!-- Chat Input -->
+      <div class="glass p-4 rounded-2xl mt-4 flex gap-2">
+        <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Chat message input"/>
+        <button onclick="sendMessage()" class="px-6 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Send message">Send</button>
+        <button onclick="sendVoiceMessage()" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Send voice message">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+      <!-- Skill Swap Suggestion -->
+      <div id="swapSuggestion" class="glass p-4 rounded-2xl mt-4 hidden">
+        <p class="text-slate-200 text-sm" id="swapText">Mentioned web development? Swap with Amy, 1.5 miles away!</p>
+        <button class="mt-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg text-white font-semibold" id="swapConnect" aria-label="Connect for skill swap">Connect</button>
+      </div>
+    </div>
+    <!-- Sidebar -->
+    <div class="sticky-sidebar glass p-6 rounded-2xl">
+      <h3 class="text-2xl font-bold text-red-300 mb-4">Online Users</h3>
+      <ul class="space-y-4 mb-6" aria-live="polite">
+        <li class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Amy&size=40" alt="Amy's avatar" class="avatar mr-2"/>
+          <span class="text-slate-200">Amy (Student)</span>
+          <span class="online-dot"></span>
+        </li>
+        <li class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=40" alt="Dr. Smith's avatar" class="avatar mr-2"/>
+          <span class="text-slate-200">Dr. Smith (Faculty)</span>
+          <span class="online-dot"></span>
+        </li>
+        <li class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Clara&size=40" alt="Clara's avatar" class="avatar mr-2"/>
+          <span class="text-slate-200">Clara (Student)</span>
+        </li>
+      </ul>
+      <h3 class="text-2xl font-bold text-red-300 mb-4">Room Stats</h3>
+      <p class="text-slate-200 mb-2">Active Users: <span id="activeUsers">3</span></p>
+      <p class="text-slate-200 mb-4">Messages Today: <span id="messageCount">10</span></p>
+      <!-- Engagement Progress -->
+      <h3 class="text-2xl font-bold text-red-300 mb-4">Your Engagement</h3>
+      <p class="text-slate-200 mb-3">Points: <span id="engagePoints">0</span></p>
+      <div class="progress-bar">
+        <div id="engageProgress" class="progress-fill" style="width: 0%"></div>
+      </div>
+      <!-- Message Search -->
+      <h3 class="text-2xl font-bold text-red-300 mt-6 mb-4">Search Messages</h3>
+      <input type="text" id="searchMessages" placeholder="Search chat..." class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Search messages in current room"/>
+    </div>
+  </section>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" onclick="scrollToTop()" aria-label="Scroll back to top">
+    <i class="fas fa-space-shuttle"></i>
+  </button>
+
+  <!-- Social Media Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-users mr-2"></i> Spread the Vibe!</h2>
+    <div class="text-center mb-8">
+      <p class="text-slate-200 text-lg">Invite friends to join the AskPat chat revolution!</p>
+    </div>
+    <div class="flex justify-center space-x-8">
+      <a href="https://www.instagram.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on Instagram">
+        <i class="fab fa-instagram mr-2"></i> Instagram
+      </a>
+      <a href="https://www.linkedin.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on LinkedIn">
+        <i class="fab fa-linkedin mr-2"></i> LinkedIn
+      </a>
+      <a href="https://www.facebook.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on Facebook">
+        <i class="fab fa-facebook mr-2"></i> Facebook
+      </a>
+      <a href="https://twitter.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Share on Twitter">
+        <i class="fab fa-twitter mr-2"></i> Twitter
+      </a>
+    </div>
+    <div class="text-center mt-8">
+      <p class="text-slate-200 italic text-lg">Use #AskPat to join the convo!</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center p-8 text-slate-300" data-aos="fade-up">
+    Forged with <i class="fas fa-fire text-red-500"></i> by the SkillBridge Crew. No coins, just collaboration.
+  </footer>
+
+  <!-- Scripts -->
+  <script type="text/javascript">
+    var gk_isXlsx = false;
+    var gk_xlsxFileLookup = {};
+    var gk_fileData = {};
+    function filledCell(cell) {
+      return cell !== '' && cell != null;
+    }
+    function loadFileData(filename) {
+      if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+        try {
+          var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+          var firstSheetName = workbook.SheetNames[0];
+          var worksheet = workbook.Sheets[firstSheetName];
+          // Convert sheet to JSON to filter blank rows
+          var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+          // Filter out blank rows (rows where all cells are empty, null, or undefined)
+          var filteredData = jsonData.filter(row => row.some(filledCell));
+          // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+          var headerRowIndex = filteredData.findIndex((row, index) =>
+            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+          );
+          // Fallback
+          if (headerRowIndex === -1 || headerRowIndex > 25) {
+            headerRowIndex = 0;
+          }
+          // Convert filtered JSON back to CSV
+          var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+          csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+          return csv;
+        } catch (e) {
+          console.error(e);
+          return "";
+        }
+      }
+      return gk_fileData[filename] || "";
+    }
+  </script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-back',
+      once: true
+    });
+
+    // Particle Background
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      for (let i = 0; i < 60; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${4 + Math.random() * 3}s`;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // Welcome Modal
+    const welcomeModal = document.getElementById('welcomeModal');
+    const joinChat = document.getElementById('joinChat');
+    const closeModal = document.getElementById('closeModal');
+    window.onload = () => {
+      setTimeout(() => {
+        welcomeModal.style.display = 'flex';
+        welcomeModal.style.opacity = '0';
+        setTimeout(() => welcomeModal.style.transition = 'opacity 0.5s', 10);
+        setTimeout(() => welcomeModal.style.opacity = '1', 20);
+        joinChat.focus();
+      }, 800);
+    };
+    joinChat.onclick = closeModal.onclick = () => {
+      welcomeModal.style.opacity = '0';
+      setTimeout(() => welcomeModal.style.display = 'none', 500);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && welcomeModal.style.display === 'flex') {
+        welcomeModal.style.opacity = '0';
+        setTimeout(() => welcomeModal.style.display = 'none', 500);
+      }
+    });
+
+    // Chat Room Switching
+    const roomButtons = document.querySelectorAll('[data-room]');
+    const rooms = document.querySelectorAll('.room');
+    let currentRoom = 'general';
+    roomButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        currentRoom = button.dataset.room;
+        rooms.forEach(room => {
+          room.classList.toggle('hidden', room.dataset.room !== currentRoom);
+        });
+        roomButtons.forEach(btn => {
+          btn.classList.toggle('active-room', btn.dataset.room === currentRoom);
+          btn.setAttribute('aria-selected', btn.dataset.room === currentRoom);
+        });
+        document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+        button.querySelector('.notification-badge').classList.add('hidden');
+        updateEngagement(10); // Award 10 points for joining a room
+      });
+    });
+
+    // Send Message
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message) return;
+      const room = document.querySelector(`.room[data-room="${currentRoom}"]`);
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message own';
+      messageDiv.innerHTML = `
+        <div class="message-bubble">${message}</div>
+        <img src="https://ui-avatars.com/api/?name=You&size=40" alt="Your avatar" class="avatar" data-user="You"/>
+      `;
+      room.appendChild(messageDiv);
+      input.value = '';
+      document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+      updateEngagement(5); // Award 5 points for sending a message
+      showSwapSuggestion(message);
+      showTypingIndicator();
+    }
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Voice Message (Demo)
+    function sendVoiceMessage() {
+      const room = document.querySelector(`.room[data-room="${currentRoom}"]`);
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message own';
+      messageDiv.innerHTML = `
+        <div class="message-bubble"><i class="fas fa-microphone"></i> Voice message (2s)</div>
+        <img src="https://ui-avatars.com/api/?name=You&size=40" alt="Your avatar" class="avatar" data-user="You"/>
+      `;
+      room.appendChild(messageDiv);
+      document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+      updateEngagement(5); // Award 5 points for voice message
+    }
+
+    // Typing Indicator
+    function showTypingIndicator() {
+      const indicator = document.querySelector('.typing-indicator');
+      indicator.style.display = 'flex';
+      setTimeout(() => {
+        indicator.style.display = 'none';
+        const room = document.querySelector(`.room[data-room="${currentRoom}"]`);
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+        messageDiv.innerHTML = `
+          <img src="https://ui-avatars.com/api/?name=Bot&size=40" alt="Bot's avatar" class="avatar" data-user="Bot"/>
+          <div class="message-bubble">Great to see you here! Keep chatting to earn points! 😄</div>
+        `;
+        room.appendChild(messageDiv);
+        document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+      }, 2000);
+    }
+
+    // Skill Swap Suggestion
+    const users = [
+      { name: 'Amy', skill: 'Web Development', distance: '1.5 miles' },
+      { name: 'Dr. Smith', skill: 'Data Analysis', distance: '1.2 miles' },
+      { name: 'Prof. Lee', skill: 'Machine Learning', distance: '2 miles' },
+      { name: 'Ben', skill: 'Video Editing', distance: '2.5 miles' },
+      { name: 'Emma', skill: 'Graphic Design', distance: '2.2 miles' },
+      { name: 'Dan', skill: 'SEO Optimization', distance: '3 miles' },
+      { name: 'Clara', skill: 'Public Speaking', distance: '1.8 miles' }
+    ];
+    function showSwapSuggestion(message) {
+      const swapSuggestion = document.getElementById('swapSuggestion');
+      const swapText = document.getElementById('swapText');
+      const swapConnect = document.getElementById('swapConnect');
+      const keywords = [
+        { keyword: 'web', user: 'Amy', skill: 'Web Development' },
+        { keyword: 'data', user: 'Dr. Smith', skill: 'Data Analysis' },
+        { keyword: 'machine', user: 'Prof. Lee', skill: 'Machine Learning' },
+        { keyword: 'video', user: 'Ben', skill: 'Video Editing' },
+        { keyword: 'design', user: 'Emma', skill: 'Graphic Design' },
+        { keyword: 'seo', user: 'Dan', skill: 'SEO Optimization' },
+        { keyword: 'speaking', user: 'Clara', skill: 'Public Speaking' }
+      ];
+      const match = keywords.find(k => message.toLowerCase().includes(k.keyword));
+      if (match) {
+        const user = users.find(u => u.name === match.user);
+        swapText.textContent = `Mentioned ${match.skill.toLowerCase()}? Swap with ${user.name}, ${user.distance} away!`;
+        swapConnect.setAttribute('aria-label', `Connect with ${user.name} for ${match.skill}`);
+        swapSuggestion.classList.remove('hidden');
+      } else {
+        swapSuggestion.classList.add('hidden');
+      }
+    }
+
+    // User Profile Popover
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('avatar')) {
+        const user = e.target.dataset.user;
+        const profile = users.find(u => u.name === user) || { name: user, skill: 'Unknown', distance: 'N/A' };
+        alert(`User: ${user}\nSkill Offered: ${profile.skill}\nDistance: ${profile.distance}`);
+      }
+    });
+
+    // Message Reactions
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('reaction')) {
+        e.target.textContent = e.target.textContent === '👍' ? '🔥' : '👍';
+        updateEngagement(2); // Award 2 points for reacting
+      }
+    });
+
+    // Message Search
+    document.getElementById('searchMessages').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const messages = document.querySelectorAll(`.room[data-room="${currentRoom}"] .message-bubble`);
+      messages.forEach(msg => {
+        const text = msg.textContent.toLowerCase();
+        msg.parentElement.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    });
+
+    // Engagement Progress
+    const engagePointsEl = document.getElementById('engagePoints');
+    const engageProgressEl = document.getElementById('engageProgress');
+    let points = 0;
+    function updateEngagement(addPoints) {
+      points += addPoints;
+      engagePointsEl.textContent = points;
+      engageProgressEl.style.width = `${Math.min((points / 100) * 100, 100)}%`;
+    }
+
+    // Back to Top
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Simulated Notifications
+    setInterval(() => {
+      const otherRooms = Array.from(roomButtons).filter(btn => btn.dataset.room !== currentRoom);
+      otherRooms.forEach(btn => {
+        if (Math.random() > 0.7) {
+          const badge = btn.querySelector('.notification-badge');
+          badge.textContent = parseInt(badge.textContent || '0') + 1;
+          badge.classList.remove('hidden');
+        }
+      });
+    }, 10000);
+  </script>
+</body>
+</html>

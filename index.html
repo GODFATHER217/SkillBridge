@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillBridge - Local Skill Swapping</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0e23 0%, #1a1a3b 100%);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      color: #e0f7fa;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(255,77,77,0.8)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') no-repeat center;
+      background-size: contain;
+      animation: pulse 5s infinite ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.6), 0 0 25px rgba(255, 77, 77, 0.3);
+    }
+    @keyframes pulse {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-80px) scale(1.5); opacity: 0.3; }
+      100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1.5rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .glass:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #6366f1;
+      text-shadow: 0 0 10px #ff4d4d, 0 0 20px #6366f1;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tag {
+      @apply px-3 py-1 bg-red-500 rounded-full text-white text-sm mr-2 mb-2 inline-block font-semibold;
+    }
+    .social-button {
+      @apply px-5 py-2 rounded-full font-semibold text-white bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 transition flex items-center;
+    }
+    #skillMap {
+      height: 450px;
+      border-radius: 1.5rem;
+      margin-bottom: 2.5rem;
+      border: 2px solid rgba(99, 102, 241, 0.3);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      @apply glass p-10 rounded-2xl max-w-xl text-center border border-red-500/30;
+    }
+    .leaderboard-card {
+      @apply glass p-5 rounded-lg flex items-center justify-between transition hover:bg-white/10;
+    }
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ff4d4d;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+    }
+    button {
+      position: relative;
+      overflow: hidden;
+    }
+    button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.5s ease;
+      border-radius: 50%;
+    }
+    button:hover::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .certificate-preview {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="rgba(10,14,35,0.9)"/><rect x="10" y="10" width="280" height="180" fill="none" stroke="#ff4d4d" stroke-width="4"/><text x="150" y="50" font-family="Orbitron" font-size="20" fill="#ff4d4d" text-anchor="middle">SkillBridge Certification</text><text x="150" y="100" font-family="Inter" font-size="14" fill="#e0f7fa" text-anchor="middle">Awarded to Your Name</text><text x="150" y="130" font-family="Inter" font-size="12" fill="#e0f7fa" text-anchor="middle">For completing Skill Swap</text><text x="150" y="160" font-family="Inter" font-size="10" fill="#e0f7fa" text-anchor="middle">Date: Date</text></svg>');
+      background-size: cover;
+      width: 300px;
+      height: 200px;
+      margin: 0 auto;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
+    }
+    .badge-preview {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="rgba(10,14,35,0.9)"/><circle cx="150" cy="100" r="80" fill="none" stroke="#ff4d4d" stroke-width="6"/><text x="150" y="70" font-family="Orbitron" font-size="18" fill="#ff4d4d" text-anchor="middle">Master Mentor Badge</text><text x="150" y="110" font-family="Inter" font-size="14" fill="#e0f7fa" text-anchor="middle">Awarded to Your Name</text><text x="150" y="140" font-family="Inter" font-size="12" fill="#e0f7fa" text-anchor="middle">For mentoring Skill</text><text x="150" y="170" font-family="Inter" font-size="10" fill="#e0f7fa" text-anchor="middle">Date: Date</text></svg>');
+      background-size: cover;
+      width: 300px;
+      height: 200px;
+      margin: 0 auto;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.5);
+    }
+    .points-badge {
+      @apply px-3 py-1 bg-gradient-to-r from-green-500 to-indigo-600 rounded-full text-white text-sm font-semibold;
+    }
+    .progress-bar {
+      @apply w-full bg-slate-900/50 rounded-full h-4 overflow-hidden;
+    }
+    .progress-fill {
+      @apply h-full bg-gradient-to-r from-red-500 to-indigo-600 transition-all duration-500;
+    }
+  </style>
+</head>
+<body class="text-white">
+  <!-- Background Particles -->
+  <div class="background-wrapper" id="particle-container"></div>
+
+  <!-- Onboarding Modal -->
+  <div id="welcomeModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+    <div class="modal-content" data-aos="zoom-in">
+      <h2 id="modalTitle" class="text-3xl font-bold text-red-400 neon-glow mb-4">Welcome to SkillBridge! ⚡️</h2>
+      <p class="text-slate-200 mb-6 text-lg">Unleash your skills, connect with locals, and build a thriving community through epic skill swaps!</p>
+      <button id="closeModal" class="px-8 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Close welcome modal">Launch Your Journey</button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="text-center p-12" data-aos="fade-in">
+    <h1 class="text-6xl font-extrabold text-red-400 neon-glow mb-3">SkillBridge</h1>
+    <p class="text-xl text-slate-200 mb-8">Swap skills. Ignite connections. Build epic communities.</p>
+    <div>
+      <a href="homepage.html" class="inline-block px-8 py-4 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Return to homepage">
+        <i class="fas fa-home mr-2"></i> Home
+      </a>
+    </div>
+  </header>
+
+  <!-- Value Proposition -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-star mr-2"></i> Why Choose SkillBridge?</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">Zero Cost, Maximum Value</h3>
+        <p class="text-slate-200 mb-4">Swap skills without spending a dime. Learn, grow, and connect for free!</p>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">Local Connections</h3>
+        <p class="text-slate-200 mb-4">Build meaningful relationships with skilled locals in your community.</p>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">Gamified Growth</h3>
+        <p class="text-slate-200 mb-4">Earn points, certifications, and badges for every swap!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Motivation and Interest -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-fire mr-2"></i> The SkillBridge Spark</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl">
+      <p class="text-slate-200 mb-4 text-lg">SkillBridge was born from a vision to empower everyone to learn and grow without barriers. We believe skills are the currency of the future, and swapping them builds stronger, more vibrant communities.</p>
+      <p class="text-slate-200 mb-4 text-lg">Join a movement where curiosity fuels progress. Whether you're a student or faculty, SkillBridge ignites your passion by connecting you with others who share your drive. Swap, learn, and level up together!</p>
+      <div class="flex justify-center mt-6">
+        <button class="px-8 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Join the SkillBridge community">Join the Revolution</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skill Swap Form -->
+  <main class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 px-6 mb-24" data-aos="fade-up">
+    <div class="glass p-8 rounded-2xl shadow-2xl">
+      <h2 class="text-2xl font-bold mb-6 text-red-400 neon-glow"><i class="fas fa-gift mr-2"></i> Offer a Skill</h2>
+      <input type="text" id="offerSkill" placeholder="Your Skill (e.g. Logo Design)" class="w-full mb-4 bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Skill to offer"/>
+      <textarea placeholder="Describe what you offer..." class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg mb-4 h-32 resize-none focus:outline-none focus:border-red-500 text-white" aria-label="Description of offered skill"></textarea>
+      <input type="text" placeholder="Your City (e.g. Seattle)" class="w-full mb-4 bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Your city"/>
+      <button class="w-full py-4 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow text-white rounded-lg font-semibold transition" aria-label="Post skill offer">Post Offer</button>
+    </div>
+    <div class="glass p-8 rounded-2xl shadow-2xl">
+      <h2 class="text-2xl font-bold mb-6 text-blue-400 neon-glow"><i class="fas fa-hands-helping mr-2"></i> Request a Skill</h2>
+      <input type="text" id="needSkill" placeholder="Need Help With (e.g. Portfolio Review)" class="w-full mb-4 bg-slate-900/50 border border-blue-400/50 p-4 rounded-lg focus:outline-none focus:border-blue-500 text-white" aria-label="Skill to request"/>
+      <textarea placeholder="Describe what you need..." class="w-full bg-slate-900/50 border border-blue-400/50 p-4 rounded-lg mb-4 h-32 resize-none focus:outline-none focus:border-blue-500 text-white" aria-label="Description of requested skill"></textarea>
+      <input type="text" placeholder="Your City (e.g. Seattle)" class="w-full mb-4 bg-slate-900/50 border border-blue-400/50 p-4 rounded-lg focus:outline-none focus:border-blue-500 text-white" aria-label="Your city"/>
+      <button class="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 neon-glow text-white rounded-lg font-semibold transition" aria-label="Post skill request">Post Request</button>
+    </div>
+  </main>
+
+  <!-- Skill Map Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-map-marker-alt mr-2"></i> Discover Local Skills</h2>
+    <div id="skillMap" class="glass" role="region" aria-label="Interactive map of local skill swappers"></div>
+    <p class="text-center text-slate-200 text-lg">Dive into a world of local talent! Click or navigate to pins to uncover epic skills.</p>
+  </section>
+
+  <!-- Reward Progress Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-star mr-2"></i> Your Reward Progress</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl">
+      <p class="text-slate-200 mb-6 text-lg">Track your swaps and unlock epic rewards! Students need 3 swaps for a certificate; faculty need 5 for a Master Mentor badge.</p>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Your Swaps</h3>
+          <p class="text-slate-200 mb-3">Current: <span id="swapCount">2</span>/3 (Student) or 5 (Faculty)</p>
+          <div class="progress-bar">
+            <div id="swapProgress" class="progress-fill" style="width: 66.67%"></div>
+          </div>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Total Points</h3>
+          <p class="text-slate-200 mb-3"><span id="totalPoints">150</span> Skill Points</p>
+          <div class="progress-bar">
+            <div id="pointsProgress" class="progress-fill" style="width: 50%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-center mt-6">
+        <button class="px-8 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="View all rewards">View All Rewards</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pointing Skills -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-trophy mr-2"></i> Earn Points for Skills</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl">
+      <p class="text-slate-200 mb-6 text-lg">Level up your SkillBridge profile by earning points for every swap. More swaps, more points, more epic rewards!</p>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Complete a Swap</h3>
+          <p class="text-slate-200 mb-3">Earn <span class="points-badge">50 Points (Student)</span> or <span class="points-badge">75 Points (Faculty)</span></p>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Refer a Friend</h3>
+          <p class="text-slate-200 mb-3">Get <span class="points-badge">100 Points</span> when your friend completes their first swap.</p>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Mentor or Host</h3>
+          <p class="text-slate-200 mb-3">Gain <span class="points-badge">150 Points (Mentor)</span> or <span class="points-badge">300 Points (Host)</span></p>
+        </div>
+      </div>
+      <div class="flex justify-center mt-6">
+        <button class="px-8 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="View your skill points">View Your Points</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Template for Certification -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-certificate mr-2"></i> SkillBridge Rewards</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl">
+      <p class="text-slate-200 mb-6 text-lg">Celebrate your achievements with a personalized certificate or Master Mentor badge!</p>
+      <div class="mb-6 flex justify-center space-x-4">
+        <button id="certStudent" class="px-6 py-2 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Select student certificate">Student Certificate</button>
+        <button id="certFaculty" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 neon-glow rounded-lg text-white font-semibold" aria-label="Select faculty badge">Faculty Badge</button>
+      </div>
+      <div id="certPreview" class="certificate-preview mb-6"></div>
+      <form class="max-w-md mx-auto">
+        <div class="mb-4">
+          <label for="certName" class="block text-slate-200 mb-2">Your Name</label>
+          <input type="text" id="certName" placeholder="Enter your name" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Name for certificate or badge"/>
+        </div>
+        <div class="mb-4">
+          <label for="certSkill" class="block text-slate-200 mb-2">Skill Swap or Mentorship</label>
+          <input type="text" id="certSkill" placeholder="e.g., Logo Design for SEO" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Skill swap or mentorship for certificate"/>
+        </div>
+        <button type="button" onclick="generateCertificate()" class="w-full py-4 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow text-white rounded-lg font-semibold transition" aria-label="Download certificate or badge">Download Reward</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Leaderboard Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-trophy mr-2"></i> Top Swappers</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl">
+      <div class="space-y-6" aria-live="polite">
+        <div class="leaderboard-card">
+          <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=48" alt="Dr. Smith's avatar" class="avatar mr-4" onerror="this.src='https://via.placeholder.com/48';"/>
+            <span class="font-bold text-red-300 text-lg">Dr. Smith (Faculty)</span>
+          </div>
+          <span class="text-green-400 font-semibold">375 Points</span>
+        </div>
+        <div class="leaderboard-card">
+          <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name=Prof.+Lee&size=48" alt="Prof. Lee's avatar" class="avatar mr-4" onerror="this.src='https://via.placeholder.com/48';"/>
+            <span class="font-bold text-red-300 text-lg">Prof. Lee (Faculty)</span>
+          </div>
+          <span class="text-green-400 font-semibold">300 Points</span>
+        </div>
+        <div class="leaderboard-card">
+          <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name=Amy&size=48" alt="Amy's avatar" class="avatar mr-4" onerror="this.src='https://via.placeholder.com/48';"/>
+            <span class="font-bold text-red-300 text-lg">Amy (Student)</span>
+          </div>
+          <span class="text-green-400 font-semibold">250 Points</span>
+        </div>
+        <div class="leaderboard-card">
+          <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name=Ben&size=48" alt="Ben's avatar" class="avatar mr-4" onerror="this.src='https://via.placeholder.com/48';"/>
+            <span class="font-bold text-red-300 text-lg">Ben (Student)</span>
+          </div>
+          <span class="text-green-400 font-semibold">200 Points</span>
+        </div>
+        <div class="leaderboard-card">
+          <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name=Clara&size=48" alt="Clara's avatar" class="avatar mr-4" onerror="this.src='https://via.placeholder.com/48';"/>
+            <span class="font-bold text-red-300 text-lg">Clara (Student)</span>
+          </div>
+          <span class="text-green-400 font-semibold">150 Points</span>
+        </div>
+        <div class="leaderboard-card">
+          <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name=Dan&size=48" alt="Dan's avatar" class="avatar mr-4" onerror="this.src='https://via.placeholder.com/48';"/>
+            <span class="font-bold text-red-300 text-lg">Dan (Student)</span>
+          </div>
+          <span class="text-green-400 font-semibold">100 Points</span>
+        </div>
+        <div class="leaderboard-card">
+          <div class="flex items-center">
+            <img src="https://ui-avatars.com/api/?name=Emma&size=48" alt="Emma's avatar" class="avatar mr-4" onerror="this.src='https://via.placeholder.com/48';"/>
+            <span class="font-bold text-red-300 text-lg">Emma (Student)</span>
+          </div>
+          <span class="text-green-400 font-semibold">50 Points</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Skill Swaps Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-exchange-alt mr-2"></i> Live Skill Swaps</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl">
+      <div class="grid md:grid-cols-3 gap-8 mb-10" aria-live="polite">
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition cursor-pointer" role="button" aria-label="View Dr. Smith's profile">
+          <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=60" alt="Dr. Smith's avatar" class="avatar mx-auto mb-3" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300">Dr. Smith (Faculty)</h3>
+          <p class="text-slate-200">1.2 miles away</p>
+          <p class="text-slate-200">Offers: Data Analysis</p>
+          <p class="text-slate-200">Wants: Public Speaking</p>
+          <button class="mt-3 w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect with Dr. Smith">Connect</button>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition cursor-pointer" role="button" aria-label="View Prof. Lee's profile">
+          <img src="https://ui-avatars.com/api/?name=Prof.+Lee&size=60" alt="Prof. Lee's avatar" class="avatar mx-auto mb-3" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300">Prof. Lee (Faculty)</h3>
+          <p class="text-slate-200">2.0 miles away</p>
+          <p class="text-slate-200">Offers: Machine Learning</p>
+          <p class="text-slate-200">Wants: Graphic Design</p>
+          <button class="mt-3 w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect with Prof. Lee">Connect</button>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition cursor-pointer" role="button" aria-label="View Amy's profile">
+          <img src="https://ui-avatars.com/api/?name=Amy&size=60" alt="Amy's avatar" class="avatar mx-auto mb-3" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300">Amy (Student)</h3>
+          <p class="text-slate-200">1.5 miles away</p>
+          <p class="text-slate-200">Offers: Web Development</p>
+          <p class="text-slate-200">Wants: Data Analysis</p>
+          <button class="mt-3 w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect with Amy">Connect</button>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition cursor-pointer" role="button" aria-label="View Ben's profile">
+          <img src="https://ui-avatars.com/api/?name=Ben&size=60" alt="Ben's avatar" class="avatar mx-auto mb-3" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300">Ben (Student)</h3>
+          <p class="text-slate-200">2.5 miles away</p>
+          <p class="text-slate-200">Offers: Video Editing</p>
+          <p class="text-slate-200">Wants: Machine Learning</p>
+          <button class="mt-3 w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect with Ben">Connect</button>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition cursor-pointer" role="button" aria-label="View Clara's profile">
+          <img src="https://ui-avatars.com/api/?name=Clara&size=60" alt="Clara's avatar" class="avatar mx-auto mb-3" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300">Clara (Student)</h3>
+          <p class="text-slate-200">1.8 miles away</p>
+          <p class="text-slate-200">Offers: Public Speaking</p>
+          <p class="text-slate-200">Wants: Web Development</p>
+          <button class="mt-3 w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect with Clara">Connect</button>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition cursor-pointer" role="button" aria-label="View Dan's profile">
+          <img src="https://ui-avatars.com/api/?name=Dan&size=60" alt="Dan's avatar" class="avatar mx-auto mb-3" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300">Dan (Student)</h3>
+          <p class="text-slate-200">3.0 miles away</p>
+          <p class="text-slate-200">Offers: SEO Optimization</p>
+          <p class="text-slate-200">Wants: Video Editing</p>
+          <button class="mt-3 w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect with Dan">Connect</button>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition cursor-pointer" role="button" aria-label="View Emma's profile">
+          <img src="https://ui-avatars.com/api/?name=Emma&size=60" alt="Emma's avatar" class="avatar mx-auto mb-3" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300">Emma (Student)</h3>
+          <p class="text-slate-200">2.2 miles away</p>
+          <p class="text-slate-200">Offers: Graphic Design</p>
+          <p class="text-slate-200">Wants: SEO Optimization</p>
+          <button class="mt-3 w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect with Emma">Connect</button>
+        </div>
+      </div>
+      <div class="flex justify-center">
+        <button class="px-8 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 neon-glow rounded-full text-white font-semibold transition text-lg" aria-label="Browse all skill swaps">Browse All Swaps</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recommended Swaps Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-star mr-2"></i> Recommended for You</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">Learn Data Analysis</h3>
+        <p class="text-slate-200 mb-3">From Dr. Smith (Faculty), 1.2 miles away</p>
+        <p class="text-slate-200 mb-4">Wants: Public Speaking</p>
+        <button class="w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect for data analysis swap">Connect</button>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">Learn Web Development</h3>
+        <p class="text-slate-200 mb-3">From Amy (Student), 1.5 miles away</p>
+        <p class="text-slate-200 mb-4">Wants: Data Analysis</p>
+        <button class="w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect for web development swap">Connect</button>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">Learn Public Speaking</h3>
+        <p class="text-slate-200 mb-3">From Clara (Student), 1.8 miles away</p>
+        <p class="text-slate-200 mb-4">Wants: Web Development</p>
+        <button class="w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="Connect for public speaking swap">Connect</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Local Events Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-calendar-alt mr-2"></i> Local Skill-Sharing Events</h2>
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">Data Science Workshop</h3>
+        <p class="text-slate-200 mb-3">Oct 25, 2025 | Downtown Community Center</p>
+        <p class="text-slate-200 mb-4">Hosted by Dr. Smith. Learn data analysis and swap pro tips!</p>
+        <button class="w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="RSVP for data science workshop">RSVP</button>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <h3 class="text-xl font-bold text-red-300 mb-3">AI Coding Meetup</h3>
+        <p class="text-slate-200 mb-3">Nov 10, 2025 | Local Library</p>
+        <p class="text-slate-200 mb-4">Hosted by Prof. Lee. Dive into machine learning projects.</p>
+        <button class="w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold" aria-label="RSVP for AI coding meetup">RSVP</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Success Stories Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-fire mr-2"></i> Success Stories</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <div class="mb-4">
+          <div class="tag">Data Analysis</div>
+          <div class="tag">Public Speaking</div>
+        </div>
+        <p class="text-slate-200 mb-4">Dr. Smith mentored Amy in data analysis, gaining public speaking skills in return!</p>
+        <div class="flex justify-between">
+          <button class="bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-2 px-5 rounded-lg neon-glow text-white font-semibold" aria-label="Read more about Dr. Smith's swap">Read More</button>
+          <button class="social-button" onclick="shareStory('Dr. Smith', 'Data Analysis for Public Speaking')" aria-label="Share Dr. Smith's success story">
+            <i class="fas fa-share-alt mr-2"></i> Share
+          </button>
+        </div>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <div class="mb-4">
+          <div class="tag">Web Development</div>
+          <div class="tag">Data Analysis</div>
+        </div>
+        <p class="text-slate-200 mb-4">Amy swapped web development skills with Dr. Smith, boosting her portfolio!</p>
+        <div class="flex justify-between">
+          <button class="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 py-2 px-5 rounded-lg neon-glow text-white font-semibold" aria-label="Read more about Amy's swap">Read More</button>
+          <button class="social-button" onclick="shareStory('Amy', 'Web Development for Data Analysis')" aria-label="Share Amy's success story">
+            <i class="fas fa-share-alt mr-2"></i> Share
+          </button>
+        </div>
+      </div>
+      <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+        <div class="mb-4">
+          <div class="tag">Machine Learning</div>
+          <div class="tag">Graphic Design</div>
+        </div>
+        <p class="text-slate-200 mb-4">Prof. Lee traded machine learning expertise for Emma’s graphic design skills!</p>
+        <div class="flex justify-between">
+          <button class="bg-gradient-to-r from-green-500 to-indigo-600 hover:from-green-600 hover:to-indigo-700 py-2 px-5 rounded-lg neon-glow text-white font-semibold" aria-label="Read more about Prof. Lee's swap">Read More</button>
+          <button class="social-button" onclick="shareStory('Prof. Lee', 'Machine Learning for Graphic Design')" aria-label="Share Prof. Lee's success story">
+            <i class="fas fa-share-alt mr-2"></i> Share
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- YouTube Analytics Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fab fa-youtube mr-2"></i> YouTube Community Stats</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl">
+      <p class="text-slate-200 mb-6 text-lg">Check out our SkillBridge YouTube channel's growth! Join our community and dive into skill-sharing tutorials.</p>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Subscribers</h3>
+          <p class="text-2xl font-semibold text-green-400 mb-3"><span id="youtubeSubscribers">1,234</span></p>
+          <p class="text-slate-200">Our growing community of skill enthusiasts!</p>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Total Views</h3>
+          <p class="text-2xl font-semibold text-green-400 mb-3"><span id="youtubeViews">56,789</span></p>
+          <p class="text-slate-200">Views across our epic tutorials and stories.</p>
+        </div>
+        <div class="text-center p-6 rounded-xl bg-slate-900/30 hover:bg-slate-900/50 transition">
+          <h3 class="text-xl font-bold text-red-300 mb-3">Monthly Visitors</h3>
+          <p class="text-2xl font-semibold text-green-400 mb-3"><span id="youtubeVisitors">12,345</span></p>
+          <p class="text-slate-200">Active learners visiting this month.</p>
+        </div>
+      </div>
+      <div class="flex justify-center mt-6">
+        <a href="https://www.youtube.com/@SkillBridgeOfficial" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Visit SkillBridge YouTube Channel">
+          <i class="fab fa-youtube mr-2"></i> Visit Our YouTube Channel
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Media Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-users mr-2"></i> Connect & Dominate!</h2>
+    <div class="text-center mb-8">
+      <p class="text-slate-200 text-lg">Join our epic community on social media for pro tips, stories, and more!</p>
+    </div>
+    <div class="flex justify-center space-x-8">
+      <a href="https://www.instagram.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Follow on Instagram">
+        <i class="fab fa-instagram mr-2"></i> Instagram
+      </a>
+      <a href="https://www.linkedin.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Follow on LinkedIn">
+        <i class="fab fa-linkedin mr-2"></i> LinkedIn
+      </a>
+      <a href="https://www.facebook.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Follow on Facebook">
+        <i class="fab fa-facebook mr-2"></i> Facebook
+      </a>
+      <a href="https://twitter.com" target="_blank" class="social-button text-lg" rel="noopener noreferrer" aria-label="Follow on Twitter">
+        <i class="fab fa-twitter mr-2"></i> Twitter
+      </a>
+    </div>
+    <div class="text-center mt-8">
+      <p class="text-slate-200 italic text-lg">Show off your swaps with #SkillBridge!</p>
+    </div>
+  </section>
+
+  <!-- Terms and Conditions Section -->
+  <section class="max-w-6xl mx-auto px-6 mb-24" data-aos="fade-up">
+    <h2 class="text-4xl font-extrabold text-center mb-10 text-red-400 neon-glow"><i class="fas fa-file-contract mr-2"></i> Terms and Conditions</h2>
+    <div class="glass p-6 rounded-xl shadow-2xl transition hover:shadow-[0_0_40px_rgba(255,77,77,0.5)]">
+      <p class="text-slate-200 mb-4 text-lg">By joining SkillBridge, you agree to our terms. This platform is for skill swaps only—no cash allowed. Check out our full terms for the details.</p>
+      <button class="w-full bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 py-3 rounded-lg neon-glow text-white font-semibold text-lg" aria-label="Read full terms and conditions">Read Full Terms</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center p-8 text-slate-300" data-aos="fade-up">
+    Forged with <i class="fas fa-fire text-red-500"></i> by the SkillBridge Crew. No coins, just collaboration.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS with custom settings
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-back',
+      once: true
+    });
+
+    // Enhanced Particle Background
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      for (let i = 0; i < 60; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${4 + Math.random() * 3}s`;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // Modal Logic with Accessibility
+    const modal = document.getElementById('welcomeModal');
+    const closeModal = document.getElementById('closeModal');
+    window.onload = () => {
+      setTimeout(() => {
+        modal.style.display = 'flex';
+        modal.style.opacity = '0';
+        setTimeout(() => modal.style.transition = 'opacity 0.5s', 10);
+        setTimeout(() => modal.style.opacity = '1', 20);
+        closeModal.focus();
+      }, 800);
+    };
+    closeModal.onclick = () => {
+      modal.style.opacity = '0';
+      setTimeout(() => modal.style.display = 'none', 500);
+    };
+    window.onclick = (e) => {
+      if (e.target === modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => modal.style.display = 'none', 500);
+      }
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+        modal.style.opacity = '0';
+        setTimeout(() => modal.style.display = 'none', 500);
+      }
+    });
+
+    // Skill Map with custom markers
+    const map = L.map('skillMap', {
+      keyboard: true
+    }).setView([47.6062, -122.3321], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+    const customIcon = L.divIcon({
+      html: `<div style="background: #ff4d4d; width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 0 10px #ff4d4d;"></div>`,
+      className: '',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+    const skills = [
+      { lat: 47.6097, lng: -122.3331, name: 'Dr. Smith', role: 'Faculty', offer: 'Data Analysis', want: 'Public Speaking' },
+      { lat: 47.6020, lng: -122.3350, name: 'Prof. Lee', role: 'Faculty', offer: 'Machine Learning', want: 'Graphic Design' },
+      { lat: 47.6150, lng: -122.3200, name: 'Amy', role: 'Student', offer: 'Web Development', want: 'Data Analysis' },
+      { lat: 47.6100, lng: -122.3300, name: 'Ben', role: 'Student', offer: 'Video Editing', want: 'Machine Learning' },
+      { lat: 47.6050, lng: -122.3250, name: 'Clara', role: 'Student', offer: 'Public Speaking', want: 'Web Development' },
+      { lat: 47.6120, lng: -122.3400, name: 'Dan', role: 'Student', offer: 'SEO Optimization', want: 'Video Editing' },
+      { lat: 47.6070, lng: -122.3150, name: 'Emma', role: 'Student', offer: 'Graphic Design', want: 'SEO Optimization' }
+    ];
+    skills.forEach(skill => {
+      L.marker([skill.lat, skill.lng], { 
+        icon: customIcon,
+        keyboard: true
+      }).addTo(map)
+        .bindPopup(`<b>${skill.name} (${skill.role})</b><br>Offers: ${skill.offer}<br>Wants: ${skill.want}`, {
+          closeButton: true,
+          autoClose: false
+        })
+        .on('mouseover', function() { this.openPopup(); })
+        .on('mouseout', function() { this.closePopup(); })
+        .on('focus', function() { this.openPopup(); })
+        .on('blur', function() { this.closePopup(); });
+    });
+
+    // Social Sharing with animation
+    function shareStory(user, swap) {
+      const text = `${user} crushed it with a ${swap} swap on SkillBridge! Join the revolution at skillbridge.com #SkillBridge`;
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      const shareButton = event.target;
+      shareButton.style.transform = 'scale(1.2)';
+      setTimeout(() => shareButton.style.transform = 'scale(1)', 200);
+      window.open(url, '_blank');
+    }
+
+    // Certificate and Badge Generation
+    let isStudentCert = true;
+    const certPreview = document.getElementById('certPreview');
+    const certStudent = document.getElementById('certStudent');
+    const certFaculty = document.getElementById('certFaculty');
+    certStudent.onclick = () => {
+      isStudentCert = true;
+      certPreview.className = 'certificate-preview mb-6';
+      certStudent.classList.add('from-red-500', 'to-indigo-600');
+      certFaculty.classList.remove('from-blue-500', 'to-indigo-600');
+      certFaculty.classList.add('from-blue-400', 'to-indigo-500');
+    };
+    certFaculty.onclick = () => {
+      isStudentCert = false;
+      certPreview.className = 'badge-preview mb-6';
+      certFaculty.classList.add('from-blue-500', 'to-indigo-600');
+      certStudent.classList.remove('from-red-500', 'to-indigo-600');
+      certStudent.classList.add('from-red-400', 'to-indigo-500');
+    };
+    function generateCertificate() {
+      const name = document.getElementById('certName').value || 'Your Name';
+      const skill = document.getElementById('certSkill').value || 'Skill Swap';
+      const date = new Date().toLocaleDateString();
+      let svg;
+      if (isStudentCert) {
+        svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+          <rect width="600" height="400" fill="rgba(10,14,35,0.9)"/>
+          <rect x="20" y="20" width="560" height="360" fill="none" stroke="#ff4d4d" stroke-width="8"/>
+          <text x="300" y="100" font-family="Orbitron" font-size="40" fill="#ff4d4d" text-anchor="middle">SkillBridge Certification</text>
+          <text x="300" y="200" font-family="Inter" font-size="28" fill="#e0f7fa" text-anchor="middle">Awarded to ${name}</text>
+          <text x="300" y="260" font-family="Inter" font-size="24" fill="#e0f7fa" text-anchor="middle">For completing ${skill}</text>
+          <text x="300" y="320" font-family="Inter" font-size="20" fill="#e0f7fa" text-anchor="middle">Date: ${date}</text>
+        </svg>`;
+      } else {
+        svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+          <rect width="600" height="400" fill="rgba(10,14,35,0.9)"/>
+          <circle cx="300" cy="200" r="160" fill="none" stroke="#ff4d4d" stroke-width="12"/>
+          <text x="300" y="140" font-family="Orbitron" font-size="36" fill="#ff4d4d" text-anchor="middle">Master Mentor Badge</text>
+          <text x="300" y="220" font-family="Inter" font-size="28" fill="#e0f7fa" text-anchor="middle">Awarded to ${name}</text>
+          <text x="300" y="280" font-family="Inter" font-size="24" fill="#e0f7fa" text-anchor="middle">For mentoring ${skill}</text>
+          <text x="300" y="340" font-family="Inter" font-size="20" fill="#e0f7fa" text-anchor="middle">Date: ${date}</text>
+        </svg>`;
+      }
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = isStudentCert ? 'SkillBridge_Certificate.svg' : 'SkillBridge_MasterMentor_Badge.svg';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Demo Reward Progress Simulation
+    const swapCountEl = document.getElementById('swapCount');
+    const swapProgressEl = document.getElementById('swapProgress');
+    const totalPointsEl = document.getElementById('totalPoints');
+    const pointsProgressEl = document.getElementById('pointsProgress');
+    function updateProgress(swaps, points) {
+      const maxSwaps = 5; // Faculty max for badge
+      swapCountEl.textContent = swaps;
+      swapProgressEl.style.width = `${(swaps / maxSwaps) * 100}%`;
+      totalPointsEl.textContent = points;
+      pointsProgressEl.style.width = `${Math.min((points / 500) * 100, 100)}%`;
+    }
+    // Simulate user progress (e.g., 2 swaps, 150 points)
+    updateProgress(2, 150);
+
+    // YouTube API Integration (uncomment and add your API key and channel ID to enable)
+    /*
+    function fetchYouTubeStats() {
+      const apiKey = 'YOUR_GOOGLE_API_KEY'; // Replace with your Google API key
+      const channelId = 'YOUR_CHANNEL_ID'; // Replace with your YouTube channel ID
+      const url = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${apiKey}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.items && data.items[0] && data.items[0].statistics) {
+            const stats = data.items[0].statistics;
+            document.getElementById('youtubeSubscribers').textContent = parseInt(stats.subscriberCount).toLocaleString();
+            document.getElementById('youtubeViews').textContent = parseInt(stats.viewCount).toLocaleString();
+            // Note: YouTube API doesn't provide "monthly visitors" directly, so this is a placeholder
+            document.getElementById('youtubeVisitors').textContent = Math.round(parseInt(stats.viewCount) / 10).toLocaleString();
+          } else {
+            console.error('No statistics found for the channel');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching YouTube stats:', error);
+          // Keep placeholder values if API fails
+        });
+    }
+    fetchYouTubeStats();
+    */
+  </script>
+</body>
+</html>

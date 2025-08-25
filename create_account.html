@@ -1,0 +1,297 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillBridge - Create Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0e23 0%, #1a1a3b 100%);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      color: #e0f7fa;
+      line-height: 1.75;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-size: contain;
+      animation: pulse 5s infinite ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.6), 0 0 25px rgba(99, 102, 241, 0.3);
+    }
+    .particle.circle {
+      background: radial-gradient(circle, #ff4d4d 20%, transparent 70%);
+    }
+    .particle.star {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(99,102,241,0.8)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>') no-repeat center;
+    }
+    @keyframes pulse {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-100px) scale(1.3); opacity: 0.4; }
+      100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid transparent;
+      border-image: linear-gradient(to right, #ff4d4d, #6366f1) 1;
+      border-radius: 1.5rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease, border-image 0.4s ease;
+    }
+    .glass:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+      border-image: linear-gradient(to right, #ff6666, #818cf8) 1;
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #6366f1;
+      text-shadow: 0 0 10px #ff4d4d, 0 0 20px #6366f1;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease both;
+    }
+    .slide-up {
+      animation: slideUp 1.2s ease-out both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: #ff4d4d;
+    }
+    h2 { font-size: 4rem; }
+    p {
+      color: #e0f7fa;
+      font-weight: 500;
+      font-size: 1.2rem;
+    }
+    a {
+      color: #ff4d4d;
+      text-decoration: none;
+      transition: all 0.4s ease;
+    }
+    a:hover {
+      color: #6366f1;
+      text-shadow: 0 0 15px rgba(99, 102, 241, 0.7);
+    }
+    .button {
+      @apply px-12 py-5 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 text-white rounded-full font-semibold text-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,77,77,0.7)] hover:scale-105 focus:ring-2 focus:ring-red-400;
+    }
+    .section-title {
+      @apply text-5xl font-extrabold text-center mb-16 neon-glow;
+    }
+    nav a {
+      color: #e0f7fa;
+      position: relative;
+    }
+    nav a:hover {
+      color: #ff4d4d;
+      text-shadow: 0 0 10px #ff4d4d;
+    }
+    nav a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: #ff4d4d;
+      transition: width 0.3s ease;
+    }
+    nav a:hover::after {
+      width: 100%;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      @apply glass p-10 rounded-2xl max-w-xl text-center border border-red-500/30;
+    }
+  </style>
+</head>
+<body class="text-white relative">
+  <!-- Background Particles -->
+  <div class="background-wrapper" id="particle-container"></div>
+
+  <!-- Navigation Bar -->
+  <header class="bg-gradient-to-t from-slate-900/80 to-indigo-900/60 p-6 shadow-2xl sticky top-0 z-50">
+    <nav class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-5xl font-bold text-red-400 neon-glow" aria-label="SkillBridge homepage">SkillBridge</a>
+      <ul class="flex space-x-8">
+        <li><a href="index.html#about" class="text-xl hover:text-red-400 transition duration-300" aria-label="About section">About</a></li>
+        <li><a href="blog.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Blog page">Blog</a></li>
+        <li><a href="index.html#start" class="text-xl hover:text-red-400 transition duration-300" aria-label="Start here section">Start Here</a></li>
+        <li><a href="index.html#podcast" class="text-xl hover:text-red-400 transition duration-300" aria-label="Podcast section">Podcast</a></li>
+        <li><a href="Askpat.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Chat page">Chat</a></li>
+        <li><a href="index.html#resources" class="text-xl hover:text-red-400 transition duration-300" aria-label="Resources section">Resources</a></li>
+        <li><a href="help.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Help page">Help</a></li>
+        <li><a href="create_account.html" class="text-xl hover:text-red-400 transition duration-300 font-bold" aria-label="Sign up for a new account">Sign Up</a></li>
+        <li><a href="index.html#signIn" class="text-xl hover:text-red-400 transition duration-300" aria-label="Sign in to account">Sign In</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Create Account Section -->
+  <section class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">Create Your SkillBridge Account</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl slide-up animation-delay-200 max-w-md mx-auto">
+      <p class="text-slate-200 mb-6 text-lg text-center">Join the skill-swapping revolution! Create your account to connect and grow.</p>
+      <form id="createAccountForm" class="max-w-md mx-auto">
+        <div class="mb-4">
+          <label for="fullName" class="block text-slate-200 mb-2">Full Name</label>
+          <input type="text" id="fullName" placeholder="Enter your full name" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Full name for account creation" required/>
+        </div>
+        <div class="mb-4">
+          <label for="email" class="block text-slate-200 mb-2">Email</label>
+          <input type="email" id="email" placeholder="Enter your email" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Email for account creation" required/>
+        </div>
+        <div class="mb-4">
+          <label for="password" class="block text-slate-200 mb-2">Password</label>
+          <input type="password" id="password" placeholder="Create a password" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Password for account creation" required/>
+        </div>
+        <div class="mb-4">
+          <label for="confirmPassword" class="block text-slate-200 mb-2">Confirm Password</label>
+          <input type="password" id="confirmPassword" placeholder="Confirm your password" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Confirm password for account creation" required/>
+        </div>
+        <button type="submit" class="w-full button mb-4" aria-label="Create account">Create Account</button>
+      </form>
+      <p class="text-slate-200 text-sm text-center">Already have an account? <a href="index.html#signIn" class="text-red-400 hover:text-red-300" aria-label="Sign in to existing account">Sign In</a></p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gradient-to-t from-slate-900/80 to-indigo-900/60 text-center py-12">
+    <p class="text-slate-200 text-xl">Forged with <i class="fas fa-fire text-red-500"></i> by the SkillBridge Crew. © 2025 SkillBridge. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-back',
+      once: true
+    });
+
+    // Particle Background
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      const types = ['circle', 'star'];
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = `particle ${types[Math.floor(Math.random() * types.length)]}`;
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${4 + Math.random() * 3}s`;
+        container.appendChild(particle);
+      }
+    }
+    window.onload = () => {
+      createParticles();
+    };
+
+    // Create Account Form Validation
+    const createAccountForm = document.getElementById('createAccountForm');
+    createAccountForm.onsubmit = (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('fullName').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      if (!fullName) {
+        alert('Please enter your full name.');
+        return;
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      if (!password || password.length < 6) {
+        alert('Please enter a password with at least 6 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+      }
+      alert(`Account created successfully for ${fullName} (${email})!`);
+      createAccountForm.reset();
+      // Replace with backend API call for actual account creation
+    };
+  </script>
+</body>
+</html>

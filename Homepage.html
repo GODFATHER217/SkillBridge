@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillBridge - Home</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0e23 0%, #1a1a3b 100%);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      color: #e0f7fa;
+      line-height: 1.75;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-size: contain;
+      animation: pulse 5s infinite ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.6), 0 0 25px rgba(99, 102, 241, 0.3);
+    }
+    .particle.circle {
+      background: radial-gradient(circle, #ff4d4d 20%, transparent 70%);
+    }
+    .particle.star {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(99,102,241,0.8)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>') no-repeat center;
+    }
+    @keyframes pulse {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-100px) scale(1.3); opacity: 0.4; }
+      100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid transparent;
+      border-image: linear-gradient(to right, #ff4d4d, #6366f1) 1;
+      border-radius: 1.5rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease, border-image 0.4s ease;
+    }
+    .glass:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+      border-image: linear-gradient(to right, #ff6666, #818cf8) 1;
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #6366f1;
+      text-shadow: 0 0 10px #ff4d4d, 0 0 20px #6366f1;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease both;
+    }
+    .slide-up {
+      animation: slideUp 1.2s ease-out both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .typing {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid #ff4d4d;
+      animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blink {
+      from, to { border-color: transparent; }
+      50% { border-color: #ff4d4d; }
+    }
+    .parallax {
+      background: linear-gradient(135deg, rgba(10,14,35,0.8), rgba(26,26,59,0.8)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,77,77,0.2)" stroke-width="2"/></svg>');
+      background-attachment: fixed;
+      background-size: cover;
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: #ff4d4d;
+    }
+    h1 { font-size: 5.5rem; }
+    h2 { font-size: 4rem; }
+    h3 { font-size: 2.2rem; }
+    p {
+      color: #e0f7fa;
+      font-weight: 500;
+      font-size: 1.2rem;
+    }
+    a {
+      color: #ff4d4d;
+      text-decoration: none;
+      transition: all 0.4s ease;
+    }
+    a:hover {
+      color: #6366f1;
+      text-shadow: 0 0 15px rgba(99, 102, 241, 0.7);
+    }
+    .button {
+      @apply px-12 py-5 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 text-white rounded-full font-semibold text-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,77,77,0.7)] hover:scale-105 focus:ring-2 focus:ring-red-400;
+    }
+    .section-title {
+      @apply text-5xl font-extrabold text-center mb-16 neon-glow;
+    }
+    .content-card {
+      @apply p-8 rounded-2xl glass transition-all duration-400 shadow-2xl hover:shadow-[0_0_40px_rgba(255,77,77,0.7)];
+    }
+    .start-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 40px;
+      font-size: 1.8rem;
+      font-weight: bold;
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      color: #ffffff;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.7), 0 0 40px rgba(99, 102, 241, 0.5);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .start-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 77, 77, 0.9), 0 0 50px rgba(99, 102, 241, 0.7);
+      background: linear-gradient(to right, #ff6666, #818cf8);
+    }
+    .start-button::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 77, 77, 0.3) 0%, transparent 70%);
+      animation: pulse 1.5s infinite;
+      z-index: 0;
+    }
+    .start-button span {
+      position: relative;
+      z-index: 1;
+    }
+    .social-button {
+      @apply px-6 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 text-white rounded-full font-semibold text-lg transition-all duration-400 flex items-center space-x-2 hover:scale-105 focus:ring-2 focus:ring-red-400;
+    }
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ff4d4d;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+    .avatar:hover {
+      transform: scale(1.1);
+    }
+    .avatar:hover::after {
+      content: attr(data-skill);
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff4d4d;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    .testimonial-card {
+      @apply p-6 rounded-xl glass transition-all duration-400 shadow-2xl hover:shadow-[0_0_40px_rgba(255,77,77,0.7)];
+    }
+    .tag {
+      @apply px-3 py-1 bg-red-500 rounded-full text-white text-sm mr-2 mb-2 inline-block font-semibold transition-all duration-300 hover:bg-indigo-600 hover:scale-110 cursor-pointer;
+    }
+    nav a {
+      color: #e0f7fa;
+      position: relative;
+    }
+    nav a:hover {
+      color: #ff4d4d;
+      text-shadow: 0 0 10px #ff4d4d;
+    }
+    nav a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: #ff4d4d;
+      transition: width 0.3s ease;
+    }
+    nav a:hover::after {
+      width: 100%;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      @apply glass p-10 rounded-2xl max-w-xl text-center border border-red-500/30;
+    }
+    .carousel {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .carousel::-webkit-scrollbar {
+      display: none;
+    }
+    .carousel-item {
+      flex: 0 0 33.33%;
+      scroll-snap-align: start;
+      padding: 1rem;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px #ff4d4d;
+      animation: rocket 2s infinite;
+      z-index: 100;
+    }
+    @keyframes rocket {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+    .progress-bar {
+      @apply w-full bg-slate-900/50 rounded-full h-4 overflow-hidden;
+    }
+    .progress-fill {
+      @apply h-full bg-gradient-to-r from-red-500 to-indigo-600 transition-all duration-500;
+    }
+    .event-banner {
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.7);
+    }
+  </style>
+</head>
+<body class="text-white relative">
+  <!-- Background Particles -->
+  <div class="background-wrapper" id="particle-container"></div>
+
+  <!-- Welcome Modal -->
+  <div id="welcomeModal" class="modal" role="dialog" aria-labelledby="welcomeTitle" aria-modal="true">
+    <div class="modal-content" data-aos="zoom-in">
+      <h2 id="welcomeTitle" class="text-3xl font-bold text-red-400 neon-glow mb-4">Welcome to SkillBridge! ⚡️</h2>
+      <p class="text-slate-200 mb-6 text-lg">Join the skill-swapping revolution! Connect, learn, and grow with our vibrant community.</p>
+      <div class="flex justify-center gap-4">
+        <a href="Askpat.html" class="button" aria-label="Join the chat">Join the Chat</a>
+        <a href="Homepage.html" class="button" aria-label="Start swapping skills">Start Swapping</a>
+      </div>
+      <button id="closeModal" class="mt-4 px-6 py-2 bg-transparent border border-red-400 text-red-400 rounded-lg hover:bg-red-400/10" aria-label="Close welcome modal">Explore Later</button>
+    </div>
+  </div>
+
+  <!-- Sign In Modal -->
+  <div id="signInModal" class="modal" role="dialog" aria-labelledby="signInTitle" aria-modal="true">
+    <div class="modal-content" data-aos="zoom-in">
+      <h2 id="signInTitle" class="text-3xl font-bold text-red-400 neon-glow mb-4">Sign In to SkillBridge</h2>
+      <p class="text-slate-200 mb-6 text-lg">Access your account to start swapping skills!</p>
+      <form id="signInForm" class="max-w-md mx-auto">
+        <div class="mb-4">
+          <label for="signInEmail" class="block text-slate-200 mb-2">Email</label>
+          <input type="email" id="signInEmail" placeholder="Enter your email" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Email for sign in" required/>
+        </div>
+        <div class="mb-4">
+          <label for="signInPassword" class="block text-slate-200 mb-2">Password</label>
+          <input type="password" id="signInPassword" placeholder="Enter your password" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Password for sign in" required/>
+        </div>
+        <button type="submit" class="w-full button mb-4" aria-label="Sign in to account">Sign In</button>
+      </form>
+      <div class="flex justify-between items-center">
+        <a href="#" class="text-red-400 hover:text-red-300 text-sm" aria-label="Reset password">Forgot Password?</a>
+        <p class="text-slate-200 text-sm">New here? <a href="create_account.html" class="text-red-400 hover:text-red-300" aria-label="Sign up for a new account">Sign Up</a></p>
+      </div>
+      <button id="closeSignInModal" class="mt-4 px-6 py-2 bg-transparent border border-red-400 text-red-400 rounded-lg hover:bg-red-400/10" aria-label="Close sign in modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="bg-gradient-to-t from-slate-900/80 to-indigo-900/60 p-6 shadow-2xl sticky top-0 z-50">
+    <nav class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="Homepage.html" class="text-5xl font-bold text-red-400 neon-glow" aria-label="SkillBridge homepage">SkillBridge</a>
+      <ul class="flex space-x-8">
+        <li><a href="#about" class="text-xl hover:text-red-400 transition duration-300" aria-label="About section">About</a></li>
+        <li><a href="blog.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Blog page">Blog</a></li>
+        <li><a href="#start" class="text-xl hover:text-red-400 transition duration-300" aria-label="Start here section">Start Here</a></li>
+        <li><a href="#podcast" class="text-xl hover:text-red-400 transition duration-300" aria-label="Podcast section">Podcast</a></li>
+        <li><a href="Askpat.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Chat page">Chat</a></li>
+        <li><a href="resources.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Resources page">Resources</a></li>
+        <li><a href="help.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Help page">Help</a></li>
+        <li><a href="create_account.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Sign up for a new account">Sign Up</a></li>
+        <li><a href="#signIn" id="signInLink" class="text-xl hover:text-red-400 transition duration-300" aria-label="Sign in to account">Sign In</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Event Banner -->
+  <section class="max-w-7xl mx-auto px-12 py-6 fade-in">
+    <div class="event-banner text-center slide-up">
+      <h3 class="text-2xl font-bold text-white mb-2">Live Skill Swap Q&A with Dr. Smith</h3>
+      <p class="text-slate-200 mb-4">Join us on May 20, 2025, 7 PM PST! <span id="countdown"></span></p>
+      <a href="Askpat.html" class="button" aria-label="RSVP for Q&A">RSVP Now</a>
+    </div>
+  </section>
+
+  <!-- Hero Section -->
+  <section class="text-center py-48 fade-in relative overflow-hidden parallax">
+    <h1 class="text-6xl font-extrabold text-red-400 neon-glow mb-12 slide-up">Welcome to SkillBridge ⚡️</h1>
+    <p class="text-3xl text-slate-200 max-w-5xl mx-auto mb-16 slide-up animation-delay-200 typing">Connect, swap, and skyrocket your skills without spending a dime!</p>
+    <div class="flex justify-center gap-8">
+      <a href="#start" class="start-button slide-up animation-delay-400" aria-label="Start your journey">
+        <span>Embark on Your Journey</span>
+      </a>
+      <a href="index.html" class="start-button slide-up animation-delay-600" aria-label="Start swapping skills">
+        <span>Start Swapping</span>
+      </a>
+      <a href="Business.html" class="start-button slide-up animation-delay-800" aria-label="Explore business skills">
+        <span>Explore Business</span>
+      </a>
+    </div>
+  <!-- About Section -->
+  <section id="about" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">What is SkillBridge?</h2>
+    <div class="text-center text-slate-200 mb-16 max-w-4xl mx-auto slide-up animation-delay-200">
+      <p class="text-lg">SkillBridge is a vibrant platform where you trade skills with others. No money, just pure value exchange. Offer a skill, gain a skill, and build epic connections!</p>
+    </div>
+    <div class="grid md:grid-cols-2 gap-16">
+      <div class="glass p-10 rounded-2xl shadow-2xl slide-up animation-delay-400">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-8">⚡️ How It Works</h3>
+        <p class="text-slate-200 mb-6">Craft a killer profile showcasing your skills and needs. Browse, connect, and swap with a thriving community!</p>
+        <p class="text-red-300 text-lg">Pro Tip: Start small—swap one skill and watch your network grow.</p>
+      </div>
+      <div class="glass p-10 rounded-2xl shadow-2xl slide-up animation-delay-600">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-8">💥 Why Swap Skills?</h3>
+        <p class="text-slate-200 mb-6">Skills are your ticket to growth. Build portfolios, master new talents, and connect with like-minded legends.</p>
+        <p class="text-red-300 text-lg">Pro Tip: Collaboration fuels-vm with a success!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Skill Swaps Section -->
+  <section id="featured-swaps" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">🌟 Featured Skill Swaps</h2>
+    <div class="carousel" role="region" aria-label="Skill swap carousel">
+      <div class="carousel-item slide-up animation-delay-400">
+        <div class="content-card">
+          <img src="https://ui-avatars.com/api/?name=Amy&size=60" alt="Amy's avatar" class="avatar mx-auto mb-4" data-skill="Web Development" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300 mb-3">Amy</h3>
+          <p class="text-slate-200 mb-3">Offers: Web Development</p>
+          <p class="text-slate-200 mb-4">Wants: Graphic Design</p>
+          <a href="local_skill_swapping.html" class="button w-full text-center" aria-label="Connect with Amy">Connect Now</a>
+        </div>
+      </div>
+      <div class="carousel-item slide-up animation-delay-600">
+        <div class="content-card">
+          <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=60" alt="Dr. Smith's avatar" class="avatar mx-auto mb-4" data-skill="Data Analysis" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300 mb-3">Dr. Smith</h3>
+          <p class="text-slate-200 mb-3">Offers: Data Analysis</p>
+          <p class="text-slate-200 mb-4">Wants: Public Speaking</p>
+          <a href="local_skill_swapping.html" class="button w-full text-center" aria-label="Connect with Dr. Smith">Connect Now</a>
+        </div>
+      </div>
+      < CDATA class="carousel-item slide-up animation-delay-800">
+        <div class="content-card">
+          <img src="https://ui-avatars.com/api/?name=Emma&size=60" alt="Emma's avatar" class="avatar mx-auto mb-4" data-skill="Graphic Design" onerror="this.src='https://via.placeholder.com/60';"/>
+          <h3 class="text-xl font-bold text-red-300 mb-3">Emma</h3>
+          <p class="text-slate-200 mb-3">Offers: Graphic Design</p>
+          <p class="text-slate-200 mb-4">Wants: SEO Optimization</p>
+          <a href="local_skill_swapping.html" class="button w-full text-center" aria-label="Connect with Emma">Connect Now</a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-12">
+      <a href="local_skill_swapping.html" class="button slide-up animation-delay-1000" aria-label="Browse all skill swaps">Browse All Swaps</a>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">💬 What Our Community Says</h2>
+    <div class="grid md:grid-cols-3 gap-12">
+      <div class="testimonial-card slide-up animation-delay-400">
+        <p class="text-slate-200 mb-4 italic">"SkillBridge transformed my career! I swapped web development for graphic design and built a killer portfolio!"</p>
+        <div class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Amy&size=48" alt="Amy's avatar" class="avatar mr-3" data-skill="Web Developer" onerror="this.src='https://via.placeholder.com/48';"/>
+          <div>
+            <p class="text-red-300 font-semibold">Amy</p>
+            <p class="text-slate-400 text-sm">Web Developer</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card slide-up animation-delay-600">
+        <p class="text-slate-200 mb-4 italic">"I learned data analysis through a local swap and now consult part-time. SkillBridge is unreal!"</p>
+        <div class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Dr.+Smith&size=48" alt="Dr. Smith's avatar" class="avatar mr-3" data-skill="Data Analyst" onerror="this.src='https://via.placeholder.com/48';"/>
+          <div>
+            <p class="text-red-300 font-semibold">Dr. Smith</p>
+            <p class="text-slate-400 text-sm">Data Analyst</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card slide-up animation-delay-800">
+        <p class="text-slate-200 mb-4 italic">"Swapping graphic design for SEO tips helped me launch my freelance gig. Thank you, SkillBridge!"</p>
+        <div class="flex items-center">
+          <img src="https://ui-avatars.com/api/?name=Emma&size=48" alt="Emma's avatar" class="avatar mr-3" data-skill="Graphic Designer" onerror="this.src='https://via.placeholder.com/48';"/>
+          <div>
+            <p class="text-red-300 font-semibold">Emma</p>
+            <p class="text-slate-400 text-sm">Graphic Designer</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform Building Guide Section -->
+  <section id="start" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">🚀 Build Your Digital Empire</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div class="content-card slide-up animation-delay-400">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">1. Strategic Website 🏠</h3>
+        <p class="text-slate-200 mb-4">Your 24/7 skill showcase with a captivating homepage, about, offerings, and contact pages.</p>
+        <p class="text-red-300 text-lg">Pro Tip: Optimize speed—53% abandon slow sites.</p>
+      </div>
+      <div class="content-card slide-up animation-delay-600">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">2. Focused Social Presence 📢</h3>
+        <p class="text-slate-200 mb-4">Master one platform. Share behind-the-scenes and swap stories with flair.</p>
+        <p class="text-red-300 text-lg">Pro Tip: Transform one post into 5+ micro-content pieces.</p>
+      </div>
+      <div class="content-card slide-up animation-delay-800">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">3. Permission-Based List ✉️</h3>
+        <p class="text-slate-200 mb-4">Grow an audience with free, valuable resources like guides or swap opportunities.</p>
+        <p class="text-red-300 text-lg">Pro Tip: Send 80% educational, 20% opportunity emails.</p>
+      </div>
+      <div class="content-card slide-up animation-delay-1000">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">4. Engaged Community 🌱</h3>
+        <p class="text-slate-200 mb-4">Foster spaces for organic skill exchanges and community growth.</p>
+        <p class="text-red-300 text-lg">Pro Tip: Start with 5 committed members over 500 passive ones.</p>
+      </div>
+    </div>
+    <div class="text-center mt-20">
+      <p class="text-red-300 italic text-2xl slide-up animation-delay-1200">"Build in public—share your journey, not just the wins."</p>
+    </div>
+  </section>
+
+  <!-- Skill Spotlight Section -->
+  <section id="skill-spotlight" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">🔥 Skill Spotlight: Web Development</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl slide-up animation-delay-200">
+      <p class="text-slate-200 mb-6 text-lg">Web Development is trending on SkillBridge! From building sleek websites to mastering coding, this skill opens doors to endless opportunities.</p>
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <span class="tag">HTML</span>
+        <span class="tag">CSS</span>
+        <span class="tag">JavaScript</span>
+        <span class="tag">React</span>
+      </div>
+      <div class="flex justify-center gap-8">
+        <a href="local_skill_swapping.html#offerSkill" class="button slide-up animation-delay-400" aria-label="Offer web development">Offer Web Development</a>
+        <a href="local_skill_swapping.html#needSkill" class="button slide-up animation-delay-600" aria-label="Learn web development">Learn Web Development</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Signup Section -->
+  <section id="newsletter" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">📧 Stay in the Loop</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl slide-up animation-delay-200">
+      <p class="text-slate-200 mb-6 text-lg text-center">Get the latest skill swap tips, success stories, and exclusive offers straight to your inbox!</p>
+      <form class="max-w-md mx-auto">
+        <div class="mb-4">
+          <input type="email" id="newsletterEmail" placeholder="Enter your email" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Email for newsletter"/>
+        </div>
+        <button type="submit" class="w-full button" aria-label="Subscribe to newsletter">Subscribe Now</button>
+      </form>
+      <div class="mt-6">
+        <p class="text-slate-200 text-sm text-center mb-2">Community Strength: <span id="subscriberCount">1,234</span> Swappers</p>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 75%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Media Section -->
+  <section id="podcast" class="max-w-7xl mx-auto px-12 py-32 fade-in text-center">
+    <h2 class="section-title text-red-400 slide-up">📢 Join the Revolution</h2>
+    <p class="text-slate-200 mb-8 max-w-3xl mx-auto slide-up animation-delay-200 text-lg">Stay hyped with the latest swaps, stories, and pro tips from the SkillBridge crew.</p>
+    <div class="flex justify-center space-x-8 mb-8">
+      <a href="https://facebook.com/yourpage" target="_blank" rel="noopener noreferrer" class="social-button slide-up animation-delay-400" aria-label="Join us on Facebook">
+        <i class="fab fa-facebook-f mr-2"></i> Facebook
+      </a>
+      <a href="https://twitter.com/yourhandle" target="_blank" rel="noopener noreferrer" class="social-button slide-up animation-delay-600" aria-label="Follow on Twitter">
+        <i class="fab fa-twitter mr-2"></i> Twitter
+      </a>
+      <a href="https://instagram.com/yourprofile" target="_blank" rel="noopener noreferrer" class="social-button slide-up animation-delay-800" aria-label="Follow on Instagram">
+        <i class="fab fa-instagram mr-2"></i> Instagram
+      </a>
+      <a href="https://linkedin.com/company/yourcompany" target="_blank" rel="noopener noreferrer" class="social-button slide-up animation-delay-1000" aria-label="Connect on LinkedIn">
+        <i class="fab fa-linkedin-in mr-2"></i> LinkedIn
+      </a>
+    </div>
+    <div class="text-center">
+      <p class="text-slate-200 text-lg mb-4">Share your SkillBridge journey!</p>
+      <button id="generateHashtag" class="button slide-up animation-delay-1200" aria-label="Generate hashtag">Get Your #SkillBridgeVibe</button>
+    </div>
+  </section>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" onclick="scrollToTop()" aria-label="Scroll back to top">
+    <i class="fas fa-rocket"></i>
+  </button>
+
+  <!-- Footer -->
+  <footer class="bg-gradient-to-t from-slate-900/80 to-indigo-900/60 text-center py-12">
+    <p class="text-slate-200 text-xl">Forged with <i class="fas fa-fire text-red-500"></i> by the SkillBridge Crew. © 2025 SkillBridge. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-back',
+      once: true
+    });
+
+    // Particle Background
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      const types = ['circle', 'star'];
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = `particle ${types[Math.floor(Math.random() * types.length)]}`;
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${4 + Math.random() * 3}s`;
+        container.appendChild(particle);
+      }
+    }
+
+    // Welcome Modal
+    const welcomeModal = document.getElementById('welcomeModal');
+    const closeModal = document.getElementById('closeModal');
+    window.onload = () => {
+      createParticles();
+      setTimeout(() => {
+        welcomeModal.style.display = 'flex';
+        welcomeModal.style.opacity = '0';
+        setTimeout(() => welcomeModal.style.transition = 'opacity 0.5s', 10);
+        setTimeout(() => welcomeModal.style.opacity = '1', 20);
+        closeModal.focus();
+      }, 800);
+    };
+    closeModal.onclick = () => {
+      welcomeModal.style.opacity = '0';
+      setTimeout(() => welcomeModal.style.display = 'none', 500);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && welcomeModal.style.display === 'flex') {
+        welcomeModal.style.opacity = '0';
+        setTimeout(() => welcomeModal.style.display = 'none', 500);
+      }
+    });
+
+    // Sign In Modal
+    const signInModal = document.getElementById('signInModal');
+    const signInLink = document.getElementById('signInLink');
+    const closeSignInModal = document.getElementById('closeSignInModal');
+    const signInForm = document.getElementById('signInForm');
+    signInLink.onclick = (e) => {
+      e.preventDefault();
+      signInModal.style.display = 'flex';
+      signInModal.style.opacity = '0';
+      setTimeout(() => signInModal.style.transition = 'opacity 0.5s', 10);
+      setTimeout(() => signInModal.style.opacity = '1', 20);
+      document.getElementById('signInEmail').focus();
+    };
+    closeSignInModal.onclick = () => {
+      signInModal.style.opacity = '0';
+      setTimeout(() => signInModal.style.display = 'none', 500);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && signInModal.style.display === 'flex') {
+        signInModal.style.opacity = '0';
+        setTimeout(() => signInModal.style.display = 'none', 500);
+      }
+    });
+    signInForm.onsubmit = (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signInEmail').value;
+      const password = document.getElementById('signInPassword').value;
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      if (!password) {
+        alert('Please enter a password.');
+        return;
+      }
+      alert(`Signed in successfully with email: ${email}`);
+      signInModal.style.opacity = '0';
+      setTimeout(() => signInModal.style.display = 'none', 500);
+      signInForm.reset();
+      // Replace with backend API call for actual authentication
+    };
+
+    // Newsletter Signup (Demo)
+    document.querySelector('#newsletter form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('newsletterEmail').value;
+      if (email) {
+        alert(`Thanks for subscribing, ${email}! You're now part of the SkillBridge crew!`);
+        document.getElementById('newsletterEmail').value = '';
+        const subscriberCount = document.getElementById('subscriberCount');
+        subscriberCount.textContent = parseInt(subscriberCount.textContent) + 1;
+      }
+    });
+
+    // Countdown Timer
+    function updateCountdown() {
+      const eventDate = new Date('2025-05-20T19:00:00-07:00').getTime();
+      const now = new Date().getTime();
+      const distance = eventDate - now;
+      if (distance < 0) {
+        document.getElementById('countdown').textContent = 'Event Started!';
+        return;
+      }
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      document.getElementById('countdown').textContent = `${hours}h ${minutes}m ${seconds}s`;
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Hashtag Generator
+    document.getElementById('generateHashtag').addEventListener('click', () => {
+      const hashtags = ['#SkillBridgeVibe', '#SwapToTop', '#SkillRevolution', '#LearnBySwap', '#SkillBridgeCrew'];
+      const randomTag = hashtags[Math.floor(Math.random() * hashtags.length)];
+      alert(`Share your journey with ${randomTag}!`);
+    });
+
+    // Back to Top
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Carousel Auto-Scroll
+    const carousel = document.querySelector('.carousel');
+    let scrollAmount = 0;
+    setInterval(() => {
+      scrollAmount += carousel.offsetWidth / 3;
+      if (scrollAmount >= carousel.scrollWidth - carousel.offsetWidth) {
+        scrollAmount = 0;
+      }
+      carousel.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+    }, 5000);
+  </script>
+</body>
+</html>

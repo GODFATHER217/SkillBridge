@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillBridge - Resources</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0a0e23 0%, #1a1a3b 100%);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      color: #e0f7fa;
+      line-height: 1.75;
+    }
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-size: contain;
+      animation: pulse 5s infinite ease-in-out;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.6), 0 0 25px rgba(99, 102, 241, 0.3);
+    }
+    .particle.circle {
+      background: radial-gradient(circle, #ff4d4d 20%, transparent 70%);
+    }
+    .particle.star {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(99,102,241,0.8)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>') no-repeat center;
+    }
+    @keyframes pulse {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-100px) scale(1.3); opacity: 0.4; }
+      100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid transparent;
+      border-image: linear-gradient(to right, #ff4d4d, #6366f1) 1;
+      border-radius: 1.5rem;
+      transition: transform 0.4s ease, box-shadow 0.4s ease, border-image 0.4s ease;
+    }
+    .glass:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+      border-image: linear-gradient(to right, #ff6666, #818cf8) 1;
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px #ff4d4d, 0 0 40px #ff4d4d, 0 0 60px #6366f1;
+      text-shadow: 0 0 10px #ff4d4d, 0 0 20px #6366f1;
+    }
+    .fade-in {
+      animation: fadeIn 1.2s ease both;
+    }
+    .slide-up {
+      animation: slideUp 1.2s ease-out both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .typing {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid #ff4d4d;
+      animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blink {
+      from, to { border-color: transparent; }
+      50% { border-color: #ff4d4d; }
+    }
+    .parallax {
+      background: linear-gradient(135deg, rgba(10,14,35,0.8), rgba(26,26,59,0.8)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,77,77,0.2)" stroke-width="2"/></svg>');
+      background-attachment: fixed;
+      background-size: cover;
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: #ff4d4d;
+    }
+    h1 { font-size: 5.5rem; }
+    h2 { font-size: 4rem; }
+    h3 { font-size: 2.2rem; }
+    p {
+      color: #e0f7fa;
+      font-weight: 500;
+      font-size: 1.2rem;
+    }
+    a {
+      color: #ff4d4d;
+      text-decoration: none;
+      transition: all 0.4s ease;
+    }
+    a:hover {
+      color: #6366f1;
+      text-shadow: 0 0 15px rgba(99, 102, 241, 0.7);
+    }
+    .button {
+      @apply px-12 py-5 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 text-white rounded-full font-semibold text-xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,77,77,0.7)] hover:scale-105 focus:ring-2 focus:ring-red-400;
+    }
+    .section-title {
+      @apply text-5xl font-extrabold text-center mb-16 neon-glow;
+    }
+    .content-card {
+      @apply p-8 rounded-2xl glass transition-all duration-400 shadow-2xl hover:shadow-[0_0_40px_rgba(255,77,77,0.7)];
+    }
+    .start-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 40px;
+      font-size: 1.8rem;
+      font-weight: bold;
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      color: #ffffff;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.7), 0 0 40px rgba(99, 102, 241, 0.5);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .start-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 77, 77, 0.9), 0 0 50px rgba(99, 102, 241, 0.7);
+      background: linear-gradient(to right, #ff6666, #818cf8);
+    }
+    .start-button::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 77, 77, 0.3) 0%, transparent 70%);
+      animation: pulse 1.5s infinite;
+      z-index: 0;
+    }
+    .start-button span {
+      position: relative;
+      z-index: 1;
+    }
+    .social-button {
+      @apply px-6 py-3 bg-gradient-to-r from-red-500 to-indigo-600 hover:from-red-600 hover:to-indigo-700 text-white rounded-full font-semibold text-lg transition-all duration-400 flex items-center space-x-2 hover:scale-105 focus:ring-2 focus:ring-red-400;
+    }
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ff4d4d;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+    .avatar:hover {
+      transform: scale(1.1);
+    }
+    .avatar:hover::after {
+      content: attr(data-skill);
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff4d4d;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 10;
+    }
+    .tag {
+      @apply px-3 py-1 bg-red-500 rounded-full text-white text-sm mr-2 mb-2 inline-block font-semibold transition-all duration-300 hover:bg-indigo-600 hover:scale-110 cursor-pointer;
+    }
+    nav a {
+      color: #e0f7fa;
+      position: relative;
+    }
+    nav a:hover {
+      color: #ff4d4d;
+      text-shadow: 0 0 10px #ff4d4d;
+    }
+    nav a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background: #ff4d4d;
+      transition: width 0.3s ease;
+    }
+    nav a:hover::after {
+      width: 100%;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      @apply glass p-10 rounded-2xl max-w-xl text-center border border-red-500/30;
+    }
+    .carousel {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .carousel::-webkit-scrollbar {
+      display: none;
+    }
+    .carousel-item {
+      flex: 0 0 33.33%;
+      scroll-snap-align: start;
+      padding: 1rem;
+    }
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: #ff4d4d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px #ff4d4d;
+      animation: rocket 2s infinite;
+      z-index: 100;
+    }
+    @keyframes rocket {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+    .progress-bar {
+      @apply w-full bg-slate-900/50 rounded-full h-4 overflow-hidden;
+    }
+    .progress-fill {
+      @apply h-full bg-gradient-to-r from-red-500 to-indigo-600 transition-all duration-500;
+    }
+    .event-banner {
+      background: linear-gradient(to right, #ff4d4d, #6366f1);
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.7);
+    }
+  </style>
+</head>
+<body class="text-white relative">
+  <!-- Background Particles -->
+  <div class="background-wrapper" id="particle-container"></div>
+
+  <!-- Sign In Modal -->
+  <div id="signInModal" class="modal" role="dialog" aria-labelledby="signInTitle" aria-modal="true">
+    <div class="modal-content" data-aos="zoom-in">
+      <h2 id="signInTitle" class="text-3xl font-bold text-red-400 neon-glow mb-4">Sign In to SkillBridge</h2>
+      <p class="text-slate-200 mb-6 text-lg">Access your account to start swapping skills!</p>
+      <form id="signInForm" class="max-w-md mx-auto">
+        <div class="mb-4">
+          <label for="signInEmail" class="block text-slate-200 mb-2">Email</label>
+          <input type="email" id="signInEmail" placeholder="Enter your email" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Email for sign in" required/>
+        </div>
+        <div class="mb-4">
+          <label for="signInPassword" class="block text-slate-200 mb-2">Password</label>
+          <input type="password" id="signInPassword" placeholder="Enter your password" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Password for sign in" required/>
+        </div>
+        <button type="submit" class="w-full button mb-4" aria-label="Sign in to account">Sign In</button>
+      </form>
+      <div class="flex justify-between items-center">
+        <a href="#" class="text-red-400 hover:text-red-300 text-sm" aria-label="Reset password">Forgot Password?</a>
+        <p class="text-slate-200 text-sm">New here? <a href="create_account.html" class="text-red-400 hover:text-red-300" aria-label="Sign up for a new account">Sign Up</a></p>
+      </div>
+      <button id="closeSignInModal" class="mt-4 px-6 py-2 bg-transparent border border-red-400 text-red-400 rounded-lg hover:bg-red-400/10" aria-label="Close sign in modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="bg-gradient-to-t from-slate-900/80 to-indigo-900/60 p-6 shadow-2xl sticky top-0 z-50">
+    <nav class="max-w-7xl mx-auto flex justify-between items-center">
+      <a href="Homepage.html" class="text-5xl font-bold text-red-400 neon-glow" aria-label="SkillBridge homepage">SkillBridge</a>
+      <ul class="flex space-x-8">
+        <li><a href="Homepage.html#about" class="text-xl hover:text-red-400 transition duration-300" aria-label="About section">About</a></li>
+        <li><a href="blog.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Blog page">Blog</a></li>
+        <li><a href="Homepage.html#start" class="text-xl hover:text-red-400 transition duration-300" aria-label="Start here section">Start Here</a></li>
+        <li><a href="Homepage.html#podcast" class="text-xl hover:text-red-400 transition duration-300" aria-label="Podcast section">Podcast</a></li>
+        <li><a href="Askpat.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Chat page">Chat</a></li>
+        <li><a href="resources.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Resources section">Resources</a></li>
+        <li><a href="help.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Help page">Help</a></li>
+        <li><a href="create_account.html" class="text-xl hover:text-red-400 transition duration-300" aria-label="Sign up for a new account">Sign Up</a></li>
+        <li><a href="#signIn" id="signInLink" class="text-xl hover:text-red-400 transition duration-300" aria-label="Sign in to account">Sign In</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <header class="text-center py-48 fade-in relative overflow-hidden parallax">
+    <h1 class="text-6xl font-extrabold text-red-400 neon-glow mb-12 slide-up">SkillBridge Resources ⚡️</h1>
+    <p class="text-3xl text-slate-200 max-w-5xl mx-auto mb-16 slide-up animation-delay-200 typing">Discover tools, guides, and tutorials to supercharge your skill-swapping journey!</p>
+    <div class="flex justify-center gap-8">
+      <a href="#resources" class="start-button slide-up animation-delay-400" aria-label="Explore resources">
+        <span>Explore Resources</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Resources Section -->
+  <section id="resources" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">📚 Curated Resources</h2>
+    <div class="text-center text-slate-200 mb-16 max-w-4xl mx-auto slide-up animation-delay-200">
+      <p class="text-lg">Explore our handpicked collection of tools, guides, and tutorials to level up your skills and make the most of your SkillBridge experience.</p>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
+      <div class="content-card slide-up animation-delay-400">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">Web Development Guide</h3>
+        <p class="text-slate-200 mb-4">Master HTML, CSS, and JavaScript with this comprehensive guide from freeCodeCamp.</p>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <span class="tag">HTML</span>
+          <span class="tag">CSS</span>
+          <span class="tag">JavaScript</span>
+        </div>
+        <a href="https://www.freecodecamp.org/learn" target="_blank" rel="noopener noreferrer" class="button w-full text-center" aria-label="Access Web Development Guide">Access Guide</a>
+      </div>
+      <div class="content-card slide-up animation-delay-600">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">Graphic Design Toolkit</h3>
+        <p class="text-slate-200 mb-4">Learn design fundamentals with Canva’s free design school tutorials.</p>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <span class="tag">Design</span>
+          <span class="tag">Canva</span>
+          <span class="tag">Creativity</span>
+        </div>
+        <a href="https://www.canva.com/learn/designschool/" target="_blank" rel="noopener noreferrer" class="button w-full text-center" aria-label="Access Graphic Design Toolkit">Access Toolkit</a>
+      </div>
+      <div class="content-card slide-up animation-delay-800">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">Data Analysis Crash Course</h3>
+        <p class="text-slate-200 mb-4">Dive into data analysis with this beginner-friendly course from Coursera.</p>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <span class="tag">Python</span>
+          <span class="tag">Data</span>
+          <span class="tag">Analytics</span>
+        </div>
+        <a href="https://www.coursera.org/learn/data-analysis-python" target="_blank" rel="noopener noreferrer" class="button w-full text-center" aria-label="Access Data Analysis Course">Access Course</a>
+      </div>
+      <div class="content-card slide-up animation-delay-1000">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">SkillBridge Swap Guide</h3>
+        <p class="text-slate-200 mb-4">Learn how to craft the perfect skill swap offer with our in-house guide.</p>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <span class="tag">Skill Swapping</span>
+          <span class="tag">Community</span>
+        </div>
+        <a href="help.html#swap-guide" class="button w-full text-center" aria-label="Access SkillBridge Swap Guide">Access Guide</a>
+      </div>
+      <div class="content-card slide-up animation-delay-1200">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">Public Speaking Tips</h3>
+        <p class="text-slate-200 mb-4">Boost your confidence with Toastmasters’ public speaking resources.</p>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <span class="tag">Speaking</span>
+          <span class="tag">Confidence</span>
+        </div>
+        <a href="https://www.toastmasters.org/resources" target="_blank" rel="noopener noreferrer" class="button w-full text-center" aria-label="Access Public Speaking Tips">Access Tips</a>
+      </div>
+      <div class="content-card slide-up animation-delay-1400">
+        <h3 class="text-2xl font-bold text-red-400 neon-glow mb-6">SEO Optimization Basics</h3>
+        <p class="text-slate-200 mb-4">Get started with SEO using Moz’s beginner’s guide to search engine optimization.</p>
+        <div class="flex flex-wrap gap-4 mb-4">
+          <span class="tag">SEO</span>
+          <span class="tag">Marketing</span>
+        </div>
+        <a href="https://moz.com/beginners-guide-to-seo" target="_blank" rel="noopener noreferrer" class="button w-full text-center" aria-label="Access SEO Guide">Access Guide</a>
+      </div>
+    </div>
+    <div class="text-center mt-12">
+      <a href="local_skill_swapping.html" class="button slide-up animation-delay-1600" aria-label="Find more skill swaps">Find More Swaps</a>
+    </div>
+  </section>
+
+  <!-- Newsletter Signup Section -->
+  <section id="newsletter" class="max-w-7xl mx-auto px-12 py-32 fade-in">
+    <h2 class="section-title text-red-400 slide-up">📧 Stay in the Loop</h2>
+    <div class="glass p-10 rounded-2xl shadow-2xl slide-up animation-delay-200">
+      <p class="text-slate-200 mb-6 text-lg text-center">Get the latest skill swap tips, success stories, and exclusive offers straight to your inbox!</p>
+      <form class="max-w-md mx-auto">
+        <div class="mb-4">
+          <input type="email" id="newsletterEmail" placeholder="Enter your email" class="w-full bg-slate-900/50 border border-red-400/50 p-4 rounded-lg focus:outline-none focus:border-red-500 text-white" aria-label="Email for newsletter"/>
+        </div>
+        <button type="submit" class="w-full button" aria-label="Subscribe to newsletter">Subscribe Now</button>
+      </form>
+      <div class="mt-6">
+        <p class="text-slate-200 text-sm text-center mb-2">Community Strength: <span id="subscriberCount">1,234</span> Swappers</p>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 75%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" onclick="scrollToTop()" aria-label="Scroll back to top">
+    <i class="fas fa-rocket"></i>
+  </button>
+
+  <!-- Footer -->
+  <footer class="bg-gradient-to-t from-slate-900/80 to-indigo-900/60 text-center py-12">
+    <p class="text-slate-200 text-xl">Forged with <i class="fas fa-fire text-red-500"></i> by the SkillBridge Crew. © 2025 SkillBridge. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script type="text/javascript">
+    var gk_isXlsx = false;
+    var gk_xlsxFileLookup = {};
+    var gk_fileData = {};
+    function filledCell(cell) {
+      return cell !== '' && cell != null;
+    }
+    function loadFileData(filename) {
+      if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+        try {
+          var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+          var firstSheetName = workbook.SheetNames[0];
+          var worksheet = workbook.Sheets[firstSheetName];
+          // Convert sheet to JSON to filter blank rows
+          var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+          // Filter out blank rows (rows where all cells are empty, null, or undefined)
+          var filteredData = jsonData.filter(row => row.some(filledCell));
+          // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+          var headerRowIndex = filteredData.findIndex((row, index) =>
+            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+          );
+          // Fallback
+          if (headerRowIndex === -1 || headerRowIndex > 25) {
+            headerRowIndex = 0;
+          }
+          // Convert filtered JSON back to CSV
+          var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+          csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+          return csv;
+        } catch (e) {
+          console.error(e);
+          return "";
+        }
+      }
+      return gk_fileData[filename] || "";
+    }
+  </script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-out-back',
+      once: true
+    });
+
+    // Particle Background
+    function createParticles() {
+      const container = document.getElementById('particle-container');
+      const types = ['circle', 'star'];
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = `particle ${types[Math.floor(Math.random() * types.length)]}`;
+        particle.style.left = `${Math.random() * 100}vw`;
+        particle.style.top = `${Math.random() * 100}vh`;
+        particle.style.animationDelay = `${Math.random() * 3}s`;
+        particle.style.animationDuration = `${4 + Math.random() * 3}s`;
+        container.appendChild(particle);
+      }
+    }
+
+    window.onload = () => {
+      createParticles();
+    };
+
+    // Sign In Modal
+    const signInModal = document.getElementById('signInModal');
+    const signInLink = document.getElementById('signInLink');
+    const closeSignInModal = document.getElementById('closeSignInModal');
+    const signInForm = document.getElementById('signInForm');
+    signInLink.onclick = (e) => {
+      e.preventDefault();
+      signInModal.style.display = 'flex';
+      signInModal.style.opacity = '0';
+      setTimeout(() => signInModal.style.transition = 'opacity 0.5s', 10);
+      setTimeout(() => signInModal.style.opacity = '1', 20);
+      document.getElementById('signInEmail').focus();
+    };
+    closeSignInModal.onclick = () => {
+      signInModal.style.opacity = '0';
+      setTimeout(() => signInModal.style.display = 'none', 500);
+    };
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && signInModal.style.display === 'flex') {
+        signInModal.style.opacity = '0';
+        setTimeout(() => signInModal.style.display = 'none', 500);
+      }
+    });
+    signInForm.onsubmit = (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signInEmail').value;
+      const password = document.getElementById('signInPassword').value;
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      if (!password) {
+        alert('Please enter a password.');
+        return;
+      }
+      alert(`Signed in successfully with email: ${email}`);
+      signInModal.style.opacity = '0';
+      setTimeout(() => signInModal.style.display = 'none', 500);
+      signInForm.reset();
+      // Replace with backend API call for actual authentication
+    };
+
+    // Newsletter Signup (Demo)
+    document.querySelector('#newsletter form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('newsletterEmail').value;
+      if (email) {
+        alert(`Thanks for subscribing, ${email}! You're now part of the SkillBridge crew!`);
+        document.getElementById('newsletterEmail').value = '';
+        const subscriberCount = document.getElementById('subscriberCount');
+        subscriberCount.textContent = parseInt(subscriberCount.textContent) + 1;
+      }
+    });
+
+    // Back to Top
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
